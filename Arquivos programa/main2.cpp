@@ -4,6 +4,7 @@
 using namespace std;
 
 char mapa[30][29] = {
+	// 1 = parede, 0 = comida, 3 = poder, 4 = banana, 5 = morango, 6 = cereja, 2 = túnel
     "1111111111111111111111111111",
     "1000000000000110000000003001",
     "1011110111110110111110111101",
@@ -35,6 +36,7 @@ char mapa[30][29] = {
     "1006000000300000000000000001", 
     "1111111111111111111111111111"
 };
+
 int posx = 4, posy = 5;
 bool cima = false, baixo = false, esq = false, dir = false;
 
@@ -44,24 +46,27 @@ bool olhacima = false;
 bool olhabaixo = false;
 
 int main() {
-    int vidas = 3;
-    int score = 0;
-    float tamanho_bloco = 28;
-    float fator_pacman = 0.85f;
-    float raio_comida = 3.f;
-    float raio_poder = 8.f;
-    float offset_comida = (tamanho_bloco / 2.0f) - raio_comida;
-    float offset_poder = (tamanho_bloco / 2.0f) - raio_poder;
+	int vidas = 3;  // Variável para armazenar o número de vidas
+	int score = 0;  // Variável para armazenar a pontuação
+	float tamanho_bloco = 28;  // Tamanho do bloco em pixels
+	float fator_pacman = 0.85f; // Fator de controle do tamanho do pacman
+	float raio_comida = 3.f;  // Raio da comida
+	float raio_poder = 8.f;  // Raio do poder
+	float centralizar_comida = (tamanho_bloco / 2.0f) - raio_comida;  // constante para centralizar a comida
+	float centralizar_poder = (tamanho_bloco / 2.0f) - raio_poder;  // constante para centralizar o poder
 
-    float tamanho_pacman_real = tamanho_bloco * fator_pacman;
-    float offset = (tamanho_bloco - tamanho_pacman_real) / 2.0f;
+    float tamanho_pacman_real = tamanho_bloco * fator_pacman;   // Regula tamanho do pacman
+	float centralizar = (tamanho_bloco - tamanho_pacman_real) / 2.0f;  // constante para centralizar o pacman
 
-    int largura_janela_total = tamanho_bloco * 28;
-    int altura_janela_total = tamanho_bloco * 30 + 80;
+	int largura_janela_total = tamanho_bloco * 28;      // Largura total da janela
+	int altura_janela_total = tamanho_bloco * 30 + 80;      // Altura total da janela (30 blocos + 80 pixels para a pontuação e vidas)
 
+	// Criação da janela
     sf::RenderWindow window(sf::VideoMode(largura_janela_total, altura_janela_total), "Pac-Man");
     window.setFramerateLimit(60);
 
+	// Criação dos objetos gráficos
+    // Paredes, comida e poder
     sf::RectangleShape rectangle(sf::Vector2f(tamanho_bloco, tamanho_bloco));
     rectangle.setFillColor(sf::Color(0, 35, 102));
 
@@ -71,45 +76,44 @@ int main() {
     sf::CircleShape poder(raio_poder);
     poder.setFillColor(sf::Color::White);
 
+	// Carregar a fonte para o texto
     sf::Font font;
     if (!font.loadFromFile("Oxanium-ExtraBold.ttf")) {
         cout << "Erro: Nao foi possivel carregar a fonte!" << endl;
         return 1;
     }
 
+	// Configurar o texto de pontuação
     sf::Text scoreText;
     scoreText.setFont(font);
     scoreText.setCharacterSize(24);
     scoreText.setFillColor(sf::Color::White);
     scoreText.setString("Score: 0");
-    sf::FloatRect textRect = scoreText.getLocalBounds();
-    scoreText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-    float centerX = largura_janela_total / 2.0f;
-    float centerY = 20.0f;
-    scoreText.setPosition(centerX - 5, centerY - 5);
+	sf::FloatRect textRect = scoreText.getLocalBounds();  // Obtém o retângulo delimitador do texto
+	scoreText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);  // Centraliza o texto
+	float centerX = largura_janela_total / 2.0f;    // Centraliza o texto na largura da janela
+	float centerY = 20.0f;      // Centraliza o texto na altura da janela
+	scoreText.setPosition(centerX - 5, centerY - 5);    // <-- Ajuste de posição para centralizar o texto
 
-    // <-- CORREÇÃO 1: Carregar Pac-Man ANTES das frutas
     //pac man direita
     sf::Texture textureDir;
-    if (!textureDir.loadFromFile("pacman.png")) { return 1; }
+	if (!textureDir.loadFromFile("pacman.png")) { return 1; }       // Caso não consiga carregar a textura do pacman
     sf::Sprite spriteDir;
     spriteDir.setTexture(textureDir);
     spriteDir.setScale(tamanho_pacman_real / textureDir.getSize().x, tamanho_pacman_real / textureDir.getSize().y);
 
     //Tamanho banana
     sf::Texture texturebanana;
-    if (!texturebanana.loadFromFile("banana.png")) { return 1; }
+	if (!texturebanana.loadFromFile("banana.png")) { return 1; }    // Caso não consiga carregar a textura da banana
     sf::Sprite spritebanana;
     spritebanana.setTexture(texturebanana);
-    // <-- CORREÇÃO 2: Usar a própria textura da banana para o cálculo
-    spritebanana.setScale(tamanho_pacman_real / texturebanana.getSize().x, tamanho_pacman_real / texturebanana.getSize().y);
+	spritebanana.setScale(tamanho_pacman_real / texturebanana.getSize().x, tamanho_pacman_real / texturebanana.getSize().y);    // Controla tamanho da banana
 
     //Tamanho morango
     sf::Texture texturemorango;
-    if (!texturemorango.loadFromFile("morango.png")) { return 1; }
+	if (!texturemorango.loadFromFile("morango.png")) { return 1; }  // Caso não consiga carregar a textura do morango
     sf::Sprite spritemorango;
     spritemorango.setTexture(texturemorango);
-    // <-- CORREÇÃO 2: Usar a própria textura do morango para o cálculo
     spritemorango.setScale(tamanho_pacman_real / texturemorango.getSize().x, tamanho_pacman_real / texturemorango.getSize().y);
 
     //Tamanho cereja
@@ -117,7 +121,6 @@ int main() {
     if (!texturecereja.loadFromFile("cereja.png")) { return 1; }
     sf::Sprite spritecereja;
     spritecereja.setTexture(texturecereja);
-    // <-- CORREÇÃO 2: Usar a própria textura da cereja para o cálculo
     spritecereja.setScale(tamanho_pacman_real / texturecereja.getSize().x, tamanho_pacman_real / texturecereja.getSize().y);
 
     //pacmanesquerda
@@ -143,6 +146,7 @@ int main() {
 
     sf::Clock clock;
 
+	// Variáveis para controlar a direção
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -190,26 +194,26 @@ int main() {
                 }
             }
 
-            // <-- CORREÇÃO 4: Adicionar lógica para comer as frutas
-            if (mapa[posy][posx] == '0') {
+			// Pontuação e coleta de itens
+			if (mapa[posy][posx] == '0') {  // Se comer comida
                 mapa[posy][posx] = ' ';
-                score += 10;
-                scoreText.setString("Score: " + std::to_string(score));
+				score += 10;    // Pontos da comida
+                scoreText.setString("Score: " + to_string(score));
             }
-            else if (mapa[posy][posx] == '3') {
+			else if (mapa[posy][posx] == '3') {     // Se comer poder
                 mapa[posy][posx] = ' ';
-                score += 50;
-                scoreText.setString("Score: " + std::to_string(score));
+				score += 50;    // Pontos do poder
+                scoreText.setString("Score: " + to_string(score));
             }
             else if (mapa[posy][posx] == '4') { // Se comer banana
                 mapa[posy][posx] = ' ';
                 score += 100; // Pontos da banana
-                scoreText.setString("Score: " + std::to_string(score));
+                scoreText.setString("Score: " + to_string(score));
             }
             else if (mapa[posy][posx] == '5') { // Se comer morango
                 mapa[posy][posx] = ' ';
                 score += 100; // Pontos do morango
-                scoreText.setString("Score: " + std::to_string(score));
+                scoreText.setString("Score: " + to_string(score));
             }
             else if (mapa[posy][posx] == '6') { // Se comer cereja
                 mapa[posy][posx] = ' ';
@@ -218,6 +222,7 @@ int main() {
             }
         }
 
+		// Linha do túnel (Travessia de uma extremidade à outra)
         const int LINHA_DO_TUNEL = 14;
         if (posx > 27 && posy == LINHA_DO_TUNEL) {
             posx = 0;
@@ -226,8 +231,10 @@ int main() {
             posx = 27;
         }
 
+		// Limpar a janela e desenhar os elementos
         window.clear(sf::Color::Black);
 
+		// Desenhar as paredes do mapa
         for (int i = 0; i < 30; i++) {
             for (int j = 0; j < 28; j++) {
                 if (mapa[i][j] == '1') {
@@ -237,54 +244,57 @@ int main() {
             }
         }
 
-		//Dedenhar os itens no mapa(comida, poder, banana, morango, cereja)
+		//Desenhar os itens no mapa(comida, poder, banana, morango, cereja)
         for (int i = 0; i < 30; i++) {
             for (int j = 0; j < 28; j++) {
                 if (mapa[i][j] == '0') { // Comida
-                    comida.setPosition(j * tamanho_bloco + offset_comida, i * tamanho_bloco + offset_comida);
+                    comida.setPosition(j * tamanho_bloco + centralizar_comida, i * tamanho_bloco + centralizar_comida);
                     window.draw(comida);
                 }
                 else if (mapa[i][j] == '3') { // Poder
-                    poder.setPosition(j * tamanho_bloco + offset_poder, i * tamanho_bloco + offset_poder);
+                    poder.setPosition(j * tamanho_bloco + centralizar_poder, i * tamanho_bloco + centralizar_poder);
                     window.draw(poder);
                 }
                 else if (mapa[i][j] == '4') { // Banana
-                    spritebanana.setPosition(j * tamanho_bloco + offset, i * tamanho_bloco + offset);
+                    spritebanana.setPosition(j * tamanho_bloco + centralizar, i * tamanho_bloco + centralizar);
                     window.draw(spritebanana);
                 }
                 else if (mapa[i][j] == '5') { // Morango
-                    spritemorango.setPosition(j * tamanho_bloco + offset, i * tamanho_bloco + offset);
+                    spritemorango.setPosition(j * tamanho_bloco + centralizar, i * tamanho_bloco + centralizar);
                     window.draw(spritemorango);
                 }
                 else if (mapa[i][j] == '6') { // Cereja
-                    spritecereja.setPosition(j * tamanho_bloco + offset, i * tamanho_bloco + offset);
+                    spritecereja.setPosition(j * tamanho_bloco + centralizar, i * tamanho_bloco + centralizar);
                     window.draw(spritecereja);
                 }
             }
         }
 
+		// Regula posição do pacman e desenha o sprite correspondente
         if (olhadireita) {
-            spriteDir.setPosition(posx * tamanho_bloco + offset, posy * tamanho_bloco + offset);
+            spriteDir.setPosition(posx * tamanho_bloco + centralizar, posy * tamanho_bloco + centralizar);
             window.draw(spriteDir);
         }
         else if (olhaesquerda) {
-            spriteEsq.setPosition(posx * tamanho_bloco + offset, posy * tamanho_bloco + offset);
+            spriteEsq.setPosition(posx * tamanho_bloco + centralizar, posy * tamanho_bloco + centralizar);
             window.draw(spriteEsq);
         }
         else if (olhacima) {
-            spriteCima.setPosition(posx * tamanho_bloco + offset, posy * tamanho_bloco + offset);
+            spriteCima.setPosition(posx * tamanho_bloco + centralizar, posy * tamanho_bloco + centralizar);
             window.draw(spriteCima);
         }
         else if (olhabaixo) {
-            spriteBaixo.setPosition(posx * tamanho_bloco + offset, posy * tamanho_bloco + offset);
+            spriteBaixo.setPosition(posx * tamanho_bloco + centralizar, posy * tamanho_bloco + centralizar);
             window.draw(spriteBaixo);
         }
 
+		// Desenhar as vidas restantes
         for (int i = 0; i < vidas; ++i) {
             spriteDir.setPosition((i * (tamanho_bloco + 5)) + 10, 30 * tamanho_bloco + 10);
             window.draw(spriteDir);
         }
 
+		// Desenhar o texto de pontuação
         window.draw(scoreText);
         window.display();
     }
