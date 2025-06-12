@@ -1,5 +1,3 @@
-Com certeza! Preparei uma versão aprimorada do seu `README.md`, com foco na clareza, formatação e um tom direto para o seu trabalho em grupo de INF 110. É só copiar e colar!
-
 ---
 
 # Pacman
