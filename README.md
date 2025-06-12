@@ -11,7 +11,7 @@ Bem-vindos ao repositório do nosso trabalho! Este README serve como um guia rá
   
   git clone <URL_DO_REPOSITÓRIO>
   Exemplo:
-  git clone https://github.com/seu-usuario/nome-do-repositorio.git
+  git clone (https://github.com/NicolasSalvador13/Pacman)[https://github.com/NicolasSalvador13/Pacman]
 
 2. Verificando o Status (Status)
   Antes de fazer qualquer alteração, é sempre bom verificar o status do seu repositório local. Isso mostra quais arquivos foram modificados, quais estão prontos para serem "commitados" e em qual branch você está.
