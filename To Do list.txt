@@ -1,0 +1,4 @@
+11/06 - Lista de afazeres do trabalho 2 - INF 110
+
+- Instalar a versão correta do MinGW
+- Instalar a versão 2.6.1 do SFML
