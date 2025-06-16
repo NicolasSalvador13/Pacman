@@ -11,6 +11,8 @@
 
 - Adicionar tela inicial e de saída
 
+- You win , Game Over e Restart
+
 - Vida do Pac man
 
 
