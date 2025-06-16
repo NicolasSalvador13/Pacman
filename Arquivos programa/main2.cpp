@@ -16,7 +16,7 @@ char mapa[30][29] = {
     "1000000113000110000110000051",
     "1111110111110110111110111111",
     "1111110111110110111110111111",
-    "1111114112222222222110111111", 
+    "1111114112222222222110111111",
     "1111110112111221112113111111",
     "1111113112122222212110111111",
     "2222220222122222212220222222",
@@ -28,17 +28,17 @@ char mapa[30][29] = {
     "1011110111110110111110111101",
     "1011110111110110111110111101",
     "1000110000000000000000110001",
-    "1110110110111111110110115111", 
+    "1110110110111111110110115111",
     "1110110110111111110110110111",
     "1300000110000110000110000001",
     "1011111111110110111111111101",
     "1011111111110110111111111131",
-    "1006000000300000000000000001", 
+    "1006000000300000000000000001",
     "1111111111111111111111111111"
 };
 
-int posx = 4, posy = 5;
-bool cima = false, baixo = false, esq = false, dir = false;
+int posx = 4, posy = 5;     // Posição inicial do pacman
+bool cima = false, baixo = false, esq = false, dir = false;     // Booleanos para controle da movimentação
 
 bool olhadireita = true;
 bool olhaesquerda = false;
@@ -173,7 +173,7 @@ int main() {
     sf::Sprite spritefantasmaverdeesquerda;
     spritefantasmaverdeesquerda.setTexture(texturefantasmaverdeesquerda);
     spritefantasmaverdeesquerda.setScale(tamanho_pacman_real / texturefantasmaverdeesquerda.getSize().x, tamanho_pacman_real / texturefantasmaverdeesquerda.getSize().y);   // Controla tamanho do fantasma
-    
+
 
     //Tamanho banana
     sf::Texture texturebanana;

@@ -1,4 +1,13 @@
-11/06 - Lista de afazeres do trabalho 2 - INF 110
+16/06 - Lista de afazeres do trabalho 2 - INF 110
 
-- Instalar a versão correta do MinGW
-- Instalar a versão 2.6.1 do SFML
+- Corrigir movimentação do pacman (suavizar)
+- Adicionar som ao jogo
+
+- Adicionar fantasmas ao jogo
+- Fazer alterações gráficas (mapas, personagens, etc)
+
+- Adicionar movimentação dos fantasmas
+
+- Adicionar tela inicial e de saída
+
+
