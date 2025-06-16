@@ -4,10 +4,14 @@
 - Adicionar som ao jogo
 
 - Adicionar fantasmas ao jogo
+
 - Fazer alterações gráficas (mapas, personagens, etc)
 
 - Adicionar movimentação dos fantasmas
 
 - Adicionar tela inicial e de saída
+
+- Vida do Pac man
+
 
 
