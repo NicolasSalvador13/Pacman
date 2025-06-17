@@ -1,6 +1,9 @@
 16/06 - Lista de afazeres do trabalho 2 - INF 110
 
-- Corrigir movimentação do pacman (suavizar)
+- Corrigir movimentação do pacman:
+	- intenção de movimentação
+	- suavização
+
 - Adicionar som ao jogo
 
 - Adicionar fantasmas ao jogo
@@ -14,6 +17,7 @@
 - You win , Game Over e Restart
 
 - Vida do Pac man
+
 
 
 
