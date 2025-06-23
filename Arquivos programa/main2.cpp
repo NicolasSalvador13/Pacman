@@ -4,7 +4,7 @@
 using namespace std;
 
 char mapa[30][29] = {
-	// 1 = parede, 0 = comida, 3 = poder, 4 = banana, 5 = morango, 6 = cereja, 2 = túnel
+	// 1 = parede, 0 = comida, 3 = poder, 4 = banana, 5 = morango, 6 = cereja, 2 = tunel
     "1111111111111111111111111111",
     "1000000000000110000000003001",
     "1011110111110110111110111101",
@@ -37,8 +37,9 @@ char mapa[30][29] = {
     "1111111111111111111111111111"
 };
 
-int posx = 4, posy = 5;     // Posição inicial do pacman
-bool cima = false, baixo = false, esq = false, dir = false;     // Booleanos para controle da movimentação
+int posx = 4, posy = 5;     // Posicao inicial do pacman
+bool cima = false, baixo = false, esq = false, dir = false;     // Booleanos para controle da movimentacao
+bool int_cima = false, int_baixo = false, int_esq = false, int_dir = false; // Variaveis para controle da intencao de movimentacao
 
 bool olhadireita = true;
 bool olhaesquerda = false;
@@ -46,8 +47,8 @@ bool olhacima = false;
 bool olhabaixo = false;
 
 int main() {
-	int vidas = 3;  // Variável para armazenar o número de vidas
-	int score = 0;  // Variável para armazenar a pontuação
+	int vidas = 3;  // Variavel para armazenar o numero de vidas
+	int score = 0;  // Variavel para armazenar a pontuacao
 	float tamanho_bloco = 28;  // Tamanho do bloco em pixels
 	float fator_pacman = 0.85f; // Fator de controle do tamanho do pacman
 	float raio_comida = 3.f;  // Raio da comida
@@ -59,13 +60,13 @@ int main() {
 	float centralizar = (tamanho_bloco - tamanho_pacman_real) / 2.0f;  // constante para centralizar o pacman
 
 	int largura_janela_total = tamanho_bloco * 28;      // Largura total da janela
-	int altura_janela_total = tamanho_bloco * 30 + 80;      // Altura total da janela (30 blocos + 80 pixels para a pontuação e vidas)
+	int altura_janela_total = tamanho_bloco * 30 + 80;      // Altura total da janela (30 blocos + 80 pixels para a pontuacao e vidas)
 
-	// Criação da janela
+	// Criacao da janela
     sf::RenderWindow window(sf::VideoMode(largura_janela_total, altura_janela_total), "Pac-Man");
     window.setFramerateLimit(60);
 
-	// Criação dos objetos gráficos
+	// Criacao dos objetos graficos
     // Paredes, comida e poder
     sf::RectangleShape rectangle(sf::Vector2f(tamanho_bloco, tamanho_bloco));
     rectangle.setFillColor(sf::Color(0, 35, 102));
@@ -83,108 +84,142 @@ int main() {
         return 1;
     }
 
-	// Configurar o texto de pontuação
+	// Configurar o texto de pontuacao
     sf::Text scoreText;
     scoreText.setFont(font);
     scoreText.setCharacterSize(24);
     scoreText.setFillColor(sf::Color::White);
     scoreText.setString("Score: 0");
-	sf::FloatRect textRect = scoreText.getLocalBounds();  // Obtém o retângulo delimitador do texto
+	sf::FloatRect textRect = scoreText.getLocalBounds();  // ObtÃ©m o retangulo delimitador do texto
 	scoreText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);  // Centraliza o texto
 	float centerX = largura_janela_total / 2.0f;    // Centraliza o texto na largura da janela
 	float centerY = 20.0f;      // Centraliza o texto na altura da janela
-	scoreText.setPosition(centerX - 5, centerY - 5);    // <-- Ajuste de posição para centralizar o texto
+	scoreText.setPosition(centerX - 5, centerY - 5);    // <-- Ajuste de posicao para centralizar o texto
 
     // --- Carregamento de todas as texturas dos fantasmas ---
 
-        // Fantasma vermelho (o original do seu exemplo)
-    sf::Texture texturefantasma11;
-    if (!texturefantasma11.loadFromFile("fantasmavermelho.png")) { return 1; } // Caso não consiga carregar a textura do fantasma vermelho
-    sf::Sprite spritefantasma11;
-    spritefantasma11.setTexture(texturefantasma11);
-    spritefantasma11.setScale(tamanho_pacman_real / texturefantasma11.getSize().x, tamanho_pacman_real / texturefantasma11.getSize().y);   // Controla tamanho do fantasma
+    // Fantasma vermelho (o original do seu exemplo)
+    sf::Texture texturefantasmavermelho;
+    if (!texturefantasmavermelho.loadFromFile("fantasmavermelho.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma vermelho
+    sf::Sprite spritefantasmavermelho;
+    spritefantasmavermelho.setTexture(texturefantasmavermelho);
+    spritefantasmavermelho.setScale(tamanho_pacman_real / texturefantasmavermelho.getSize().x, tamanho_pacman_real / texturefantasmavermelho.getSize().y);   // Controla tamanho do fantasma
+
+    // Fantasma vermelho para baixo
+    sf::Texture texturefantasmavermelhobaixo;
+    if (!texturefantasmavermelhobaixo.loadFromFile("fantasmavermelhobaixo.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma vermelho para baixo
+    sf::Sprite spritefantasmavermelhobaixo;
+    spritefantasmavermelhobaixo.setTexture(texturefantasmavermelhobaixo);
+    spritefantasmavermelhobaixo.setScale(tamanho_pacman_real / texturefantasmavermelhobaixo.getSize().x, tamanho_pacman_real / texturefantasmavermelhobaixo.getSize().y);   // Controla tamanho do fantasma
+
+    // Fantasma vermelho para cima
+    sf::Texture texturefantasmavermelhocima;
+    if (!texturefantasmavermelhocima.loadFromFile("fantasmavermelhocima.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma vermelho para cima
+    sf::Sprite spritefantasmavermelhocima;
+    spritefantasmavermelhocima.setTexture(texturefantasmavermelhocima);
+    spritefantasmavermelhocima.setScale(tamanho_pacman_real / texturefantasmavermelhocima.getSize().x, tamanho_pacman_real / texturefantasmavermelhocima.getSize().y);   // Controla tamanho do fantasma
+
+    // Fantasma vermelho para esquerda
+    sf::Texture texturefantasmavermelhoesquerda;
+    if (!texturefantasmavermelhoesquerda.loadFromFile("fantasmavermelhoesquerda.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma vermelho para esquerda
+    sf::Sprite spritefantasmavermelhoesquerda;
+    spritefantasmavermelhoesquerda.setTexture(texturefantasmavermelhoesquerda);
+    spritefantasmavermelhoesquerda.setScale(tamanho_pacman_real / texturefantasmavermelhoesquerda.getSize().x, tamanho_pacman_real / texturefantasmavermelhoesquerda.getSize().y);   // Controla tamanho do fantasma
 
     // Fantasma amarelo
     sf::Texture texturefantasmaamarelo;
-    if (!texturefantasmaamarelo.loadFromFile("fantasmaamarelo.png")) { return 1; } // Caso não consiga carregar a textura do fantasma amarelo
+    if (!texturefantasmaamarelo.loadFromFile("fantasmaamarelo.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma amarelo
     sf::Sprite spritefantasmaamarelo;
     spritefantasmaamarelo.setTexture(texturefantasmaamarelo);
     spritefantasmaamarelo.setScale(tamanho_pacman_real / texturefantasmaamarelo.getSize().x, tamanho_pacman_real / texturefantasmaamarelo.getSize().y);   // Controla tamanho do fantasma
 
     // Fantasma amarelo para baixo
     sf::Texture texturefantasmaamarelobaixo;
-    if (!texturefantasmaamarelobaixo.loadFromFile("fantasmaamarelobaixo.png")) { return 1; } // Caso não consiga carregar a textura do fantasma amarelo para baixo
+    if (!texturefantasmaamarelobaixo.loadFromFile("fantasmaamarelobaixo.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma amarelo para baixo
     sf::Sprite spritefantasmaamarelobaixo;
     spritefantasmaamarelobaixo.setTexture(texturefantasmaamarelobaixo);
     spritefantasmaamarelobaixo.setScale(tamanho_pacman_real / texturefantasmaamarelobaixo.getSize().x, tamanho_pacman_real / texturefantasmaamarelobaixo.getSize().y);   // Controla tamanho do fantasma
 
     // Fantasma amarelo para cima
     sf::Texture texturefantasmaamarelocima;
-    if (!texturefantasmaamarelocima.loadFromFile("fantasmaamarelocima.png")) { return 1; } // Caso não consiga carregar a textura do fantasma amarelo para cima
+    if (!texturefantasmaamarelocima.loadFromFile("fantasmaamarelocima.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma amarelo para cima
     sf::Sprite spritefantasmaamarelocima;
     spritefantasmaamarelocima.setTexture(texturefantasmaamarelocima);
     spritefantasmaamarelocima.setScale(tamanho_pacman_real / texturefantasmaamarelocima.getSize().x, tamanho_pacman_real / texturefantasmaamarelocima.getSize().y);   // Controla tamanho do fantasma
 
     // Fantasma amarelo para esquerda
     sf::Texture texturefantasmaamareloesquerda;
-    if (!texturefantasmaamareloesquerda.loadFromFile("fantasmaamareloesquerda.png")) { return 1; } // Caso não consiga carregar a textura do fantasma amarelo para esquerda
+    if (!texturefantasmaamareloesquerda.loadFromFile("fantasmaamareloesquerda.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma amarelo para esquerda
     sf::Sprite spritefantasmaamareloesquerda;
     spritefantasmaamareloesquerda.setTexture(texturefantasmaamareloesquerda);
     spritefantasmaamareloesquerda.setScale(tamanho_pacman_real / texturefantasmaamareloesquerda.getSize().x, tamanho_pacman_real / texturefantasmaamareloesquerda.getSize().y);   // Controla tamanho do fantasma
 
     // Fantasma rosa
     sf::Texture texturefantasmarosa;
-    if (!texturefantasmarosa.loadFromFile("fantasmarosa.png")) { return 1; } // Caso não consiga carregar a textura do fantasma rosa
+    if (!texturefantasmarosa.loadFromFile("fantasmarosa.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma rosa
     sf::Sprite spritefantasmarosa;
     spritefantasmarosa.setTexture(texturefantasmarosa);
     spritefantasmarosa.setScale(tamanho_pacman_real / texturefantasmarosa.getSize().x, tamanho_pacman_real / texturefantasmarosa.getSize().y);   // Controla tamanho do fantasma
 
     // Fantasma rosa para cima
     sf::Texture texturefantasmarosacima;
-    if (!texturefantasmarosacima.loadFromFile("fantasmarosacima.png")) { return 1; } // Caso não consiga carregar a textura do fantasma rosa para cima
+    if (!texturefantasmarosacima.loadFromFile("fantasmarosacima.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma rosa para cima
     sf::Sprite spritefantasmarosacima;
     spritefantasmarosacima.setTexture(texturefantasmarosacima);
     spritefantasmarosacima.setScale(tamanho_pacman_real / texturefantasmarosacima.getSize().x, tamanho_pacman_real / texturefantasmarosacima.getSize().y);   // Controla tamanho do fantasma
 
     // Fantasma rosa para esquerda
     sf::Texture texturefantasmarosaesquerda;
-    if (!texturefantasmarosaesquerda.loadFromFile("fantasmarosaesquerda.png")) { return 1; } // Caso não consiga carregar a textura do fantasma rosa para esquerda
+    if (!texturefantasmarosaesquerda.loadFromFile("fantasmarosaesquerda.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma rosa para esquerda
     sf::Sprite spritefantasmarosaesquerda;
     spritefantasmarosaesquerda.setTexture(texturefantasmarosaesquerda);
     spritefantasmarosaesquerda.setScale(tamanho_pacman_real / texturefantasmarosaesquerda.getSize().x, tamanho_pacman_real / texturefantasmarosaesquerda.getSize().y);   // Controla tamanho do fantasma
 
-    // Fantasma verde
-    sf::Texture texturefantasmaverde;
-    if (!texturefantasmaverde.loadFromFile("fantasmaverde.png")) { return 1; } // Caso não consiga carregar a textura do fantasma verde
-    sf::Sprite spritefantasmaverde;
-    spritefantasmaverde.setTexture(texturefantasmaverde);
-    spritefantasmaverde.setScale(tamanho_pacman_real / texturefantasmaverde.getSize().x, tamanho_pacman_real / texturefantasmaverde.getSize().y);   // Controla tamanho do fantasma
+    // Fantasma rosa para baixo
+    sf::Texture texturefantasmarosabaixo;
+    if (!texturefantasmarosabaixo.loadFromFile("fantasmarosabaixo.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma rosa para baixo
+    sf::Sprite spritefantasmarosabaixo;
+    spritefantasmarosabaixo.setTexture(texturefantasmarosabaixo);
+    spritefantasmarosabaixo.setScale(tamanho_pacman_real / texturefantasmarosabaixo.getSize().x, tamanho_pacman_real / texturefantasmarosabaixo.getSize().y);   // Controla tamanho do fantasma
 
-    // Fantasma verde para baixo
-    sf::Texture texturefantasmaverdebaixo;
-    if (!texturefantasmaverdebaixo.loadFromFile("fantasmaverdebaixo.png")) { return 1; } // Caso não consiga carregar a textura do fantasma verde para baixo
-    sf::Sprite spritefantasmaverdebaixo;
-    spritefantasmaverdebaixo.setTexture(texturefantasmaverdebaixo);
-    spritefantasmaverdebaixo.setScale(tamanho_pacman_real / texturefantasmaverdebaixo.getSize().x, tamanho_pacman_real / texturefantasmaverdebaixo.getSize().y);   // Controla tamanho do fantasma
+    // Fantasma azul
+    sf::Texture texturefantasmaazul;
+    if (!texturefantasmaazul.loadFromFile("fantasmaazul.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma azul
+    sf::Sprite spritefantasmaazul;
+    spritefantasmaazul.setTexture(texturefantasmaazul);
+    spritefantasmaazul.setScale(tamanho_pacman_real / texturefantasmaazul.getSize().x, tamanho_pacman_real / texturefantasmaazul.getSize().y);   // Controla tamanho do fantasma
 
-    // Fantasma verde para esquerda
-    sf::Texture texturefantasmaverdeesquerda;
-    if (!texturefantasmaverdeesquerda.loadFromFile("fantasmaverdeesquerda.png")) { return 1; } // Caso não consiga carregar a textura do fantasma verde para esquerda
-    sf::Sprite spritefantasmaverdeesquerda;
-    spritefantasmaverdeesquerda.setTexture(texturefantasmaverdeesquerda);
-    spritefantasmaverdeesquerda.setScale(tamanho_pacman_real / texturefantasmaverdeesquerda.getSize().x, tamanho_pacman_real / texturefantasmaverdeesquerda.getSize().y);   // Controla tamanho do fantasma
+    // Fantasma azul para baixo
+    sf::Texture texturefantasmaazulbaixo;
+    if (!texturefantasmaazulbaixo.loadFromFile("fantasmaazulbaixo.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma azul para baixo
+    sf::Sprite spritefantasmaazulbaixo;
+    spritefantasmaazulbaixo.setTexture(texturefantasmaazulbaixo);
+    spritefantasmaazulbaixo.setScale(tamanho_pacman_real / texturefantasmaazulbaixo.getSize().x, tamanho_pacman_real / texturefantasmaazulbaixo.getSize().y);   // Controla tamanho do fantasma
 
+    // Fantasma azul para esquerda
+    sf::Texture texturefantasmaazulesquerda;
+    if (!texturefantasmaazulesquerda.loadFromFile("fantasmaazulesquerda.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma azul para esquerda
+    sf::Sprite spritefantasmaazulesquerda;
+    spritefantasmaazulesquerda.setTexture(texturefantasmaazulesquerda);
+    spritefantasmaazulesquerda.setScale(tamanho_pacman_real / texturefantasmaazulesquerda.getSize().x, tamanho_pacman_real / texturefantasmaazulesquerda.getSize().y);   // Controla tamanho do fantasma
+
+    // Fantasma azul para cima
+    sf::Texture texturefantasmaazulcima;
+    if (!texturefantasmaazulcima.loadFromFile("fantasmaazulcima.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma azul para cima
+    sf::Sprite spritefantasmaazulcima;
+    spritefantasmaazulcima.setTexture(texturefantasmaazulcima);
+    spritefantasmaazulcima.setScale(tamanho_pacman_real / texturefantasmaazulcima.getSize().x, tamanho_pacman_real / texturefantasmaazulcima.getSize().y);   // Controla tamanho do fantasma
 
     //Tamanho banana
     sf::Texture texturebanana;
-	if (!texturebanana.loadFromFile("banana.png")) { return 1; }    // Caso não consiga carregar a textura da banana
+	if (!texturebanana.loadFromFile("banana.png")) { return 1; }    // Caso nao consiga carregar a textura da banana
     sf::Sprite spritebanana;
     spritebanana.setTexture(texturebanana);
 	spritebanana.setScale(tamanho_pacman_real / texturebanana.getSize().x, tamanho_pacman_real / texturebanana.getSize().y);    // Controla tamanho da banana
 
     //Tamanho morango
     sf::Texture texturemorango;
-	if (!texturemorango.loadFromFile("morango.png")) { return 1; }  // Caso não consiga carregar a textura do morango
+	if (!texturemorango.loadFromFile("morango.png")) { return 1; }  // Caso nao consiga carregar a textura do morango
     sf::Sprite spritemorango;
     spritemorango.setTexture(texturemorango);
     spritemorango.setScale(tamanho_pacman_real / texturemorango.getSize().x, tamanho_pacman_real / texturemorango.getSize().y);
@@ -198,7 +233,7 @@ int main() {
 
     //pac man direita
     sf::Texture textureDir;
-    if (!textureDir.loadFromFile("pacman.png")) { return 1; }       // Caso não consiga carregar a textura do pacman
+    if (!textureDir.loadFromFile("pacman.png")) { return 1; }       // Caso nao consiga carregar a textura do pacman
     sf::Sprite spriteDir;
     spriteDir.setTexture(textureDir);
     spriteDir.setScale(tamanho_pacman_real / textureDir.getSize().x, tamanho_pacman_real / textureDir.getSize().y);
@@ -226,7 +261,7 @@ int main() {
 
     sf::Clock clock;
 
-	// Variáveis para controlar a direção
+	// Variaveis para controlar a direcao
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -274,7 +309,7 @@ int main() {
                 }
             }
 
-			// Pontuação e coleta de itens
+			// Pontuacao e coleta de itens
 			if (mapa[posy][posx] == '0') {  // Se comer comida
                 mapa[posy][posx] = ' ';
 				score += 10;    // Pontos da comida
@@ -302,7 +337,7 @@ int main() {
             }
         }
 
-		// Linha do túnel (Travessia de uma extremidade à outra)
+		// Linha do tunel (Travessia de uma extremidade a outra)
         const int LINHA_DO_TUNEL = 14;
         if (posx > 27 && posy == LINHA_DO_TUNEL) {
             posx = 0;
@@ -350,7 +385,7 @@ int main() {
             }
         }
 
-		// Regula posição do pacman e desenha o sprite correspondente
+		// Regula posicao do pacman e desenha o sprite correspondente
         if (olhadireita) {
             spriteDir.setPosition(posx * tamanho_bloco + centralizar, posy * tamanho_bloco + centralizar);
             window.draw(spriteDir);
@@ -374,7 +409,7 @@ int main() {
             window.draw(spriteDir);
         }
 
-		// Desenhar o texto de pontuação
+		// Desenhar o texto de pontuacao
         window.draw(scoreText);
         window.display();
     }
