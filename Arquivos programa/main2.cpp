@@ -306,6 +306,7 @@ int main() {
             olhadireita = true; olhaesquerda = olhacima = olhabaixo = false;
         }
 
+        // Atualiza a posição do Pacman
         if (cima && posy > 0 && mapa[posy - 1][posx] != '1')
             posy--;
 
