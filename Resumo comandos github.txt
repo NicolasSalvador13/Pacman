@@ -1,0 +1,22 @@
+Clone: git clone https://github.com/NicolasSalvador13/Pacman.git
+
+Status: git status
+
+Adicionar arquivos (preparar arquivos para enviar): git add .
+
+Commit (salvar alterações): git commit -m "Sua mensagem descritiva sobre as alterações"
+
+Baixar alterações: git pull origin <nome-da-branch>
+
+Enviar alterações: git push origin <nome-da-branch>
+
+Checar branch atual: git branch
+
+Criar nova branch: git branch nome-da-sua-branch
+
+Trocar para uma branch existente: git checkout nome-da-sua-branch
+
+Excluir branch localmente: git branch -d nome-da-sua-branch
+
+Enviar branch: git push origin nome-da-sua-branch
+
