@@ -270,20 +270,16 @@ int main() {
 
             if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Left) {
-                    esq = true; dir = cima = baixo = false;
-                    olhaesquerda = true; olhadireita = olhacima = olhabaixo = false;
+                    int_esq = true; int_dir = int_cima = int_baixo = false;
                 }
                 else if (event.key.code == sf::Keyboard::Right) {
-                    dir = true; esq = cima = baixo = false;
-                    olhadireita = true; olhaesquerda = olhacima = olhabaixo = false;
+                    int_dir = true; int_esq = int_cima = int_baixo = false;
                 }
                 else if (event.key.code == sf::Keyboard::Up) {
-                    cima = true; esq = dir = baixo = false;
-                    olhacima = true; olhadireita = olhaesquerda = olhabaixo = false;
+                    int_cima = true; int_esq = int_dir = int_baixo = false;
                 }
                 else if (event.key.code == sf::Keyboard::Down) {
-                    baixo = true; esq = dir = cima = false;
-                    olhabaixo = true; olhadireita = olhaesquerda = olhacima = false;
+                    int_baixo = true; int_esq = int_dir = int_cima = false;
                 }
             }
         }
@@ -292,22 +288,40 @@ int main() {
             clock.restart();
             const int LINHA_DO_TUNEL = 14;
 
-            if (cima && posy > 0 && mapa[posy - 1][posx] != '1')
-                posy--;
+        // Atualiza direção real com base na intenção, se possível
+        if (int_cima && posy > 0 && mapa[posy - 1][posx] != '1') {
+            cima = true; baixo = esq = dir = false;
+            olhacima = true; olhadireita = olhaesquerda = olhabaixo = false;
+        }
+        else if (int_baixo && posy < 29 && mapa[posy + 1][posx] != '1') {
+            baixo = true; cima = esq = dir = false;
+            olhabaixo = true; olhadireita = olhaesquerda = olhacima = false;
+        }
+        else if (int_esq && ((posx > 0 && mapa[posy][posx - 1] != '1') || (posx == 0 && posy == 14))) {
+            esq = true; dir = cima = baixo = false;
+            olhaesquerda = true; olhadireita = olhacima = olhabaixo = false;
+        }
+        else if (int_dir && ((posx < 27 && mapa[posy][posx + 1] != '1') || (posx == 27 && posy == 14))) {
+            dir = true; esq = cima = baixo = false;
+            olhadireita = true; olhaesquerda = olhacima = olhabaixo = false;
+        }
 
-            if (baixo && posy < 29 && mapa[posy + 1][posx] != '1')
-                posy++;
+        if (cima && posy > 0 && mapa[posy - 1][posx] != '1')
+            posy--;
 
-            if (esq) {
-                if ((posx > 0 && mapa[posy][posx - 1] != '1') || (posx == 0 && posy == LINHA_DO_TUNEL)) {
-                    posx--;
-                }
+        if (baixo && posy < 29 && mapa[posy + 1][posx] != '1')
+            posy++;
+
+        if (esq) {
+            if ((posx > 0 && mapa[posy][posx - 1] != '1') || (posx == 0 && posy == LINHA_DO_TUNEL)) {
+                posx--;
             }
-            if (dir) {
-                if ((posx < 27 && mapa[posy][posx + 1] != '1') || (posx == 27 && posy == LINHA_DO_TUNEL)) {
-                    posx++;
-                }
+        }
+        if (dir) {
+            if ((posx < 27 && mapa[posy][posx + 1] != '1') || (posx == 27 && posy == LINHA_DO_TUNEL)) {
+                posx++;
             }
+        }
 
 			// Pontuacao e coleta de itens
 			if (mapa[posy][posx] == '0') {  // Se comer comida
