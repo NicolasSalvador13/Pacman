@@ -4,6 +4,16 @@
 #include <cmath>
 using namespace std;
 
+class Ghost {
+    public:
+    float posfx, posfy; // Posições do fantasma
+    bool vivo; // Estado do fantasma (vivo ou morto)
+    bool visivel; // Visibilidade do fantasma
+
+
+
+};
+
 char mapa[30][29] = {
 	// 1 = parede, 0 = comida, 3 = poder, 4 = banana, 5 = morango, 6 = cereja, 2 = tunel
     "1111111111111111111111111111",
