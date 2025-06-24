@@ -327,56 +327,52 @@ int main() {
 
             // Atualize a posição suavemente e só continue se não houver parede à frente
             if (cima) {
-                int proxY = (int)((pacmanY - velocidade * deltaTime) / tamanho_bloco);
                 if (alinhado && (posy == 0 || mapa[posy - 1][posx] == '1')) {
                     cima = false;
                 } else {
-                    float destino = (posy - 1) * tamanho_bloco;
-                    if (pacmanY > destino)
+                    float destino = (posy - 1) * tamanho_bloco;     // Destino do pacman (posição acima na grade)
+                    if (pacmanY > destino)      // Caso ainda não tenha chegado ao destino, continue movendo
                         pacmanY -= velocidade * deltaTime;
-                    if (pacmanY < destino) {
+                    if (pacmanY < destino) {        // Se já chegou ao destino, ajuste a posição
                         pacmanY = destino;
                         posy--;
                     }
                 }
             }
             else if (baixo) {
-                int proxY = (int)((pacmanY + velocidade * deltaTime) / tamanho_bloco);
                 if (alinhado && (posy == 29 || mapa[posy + 1][posx] == '1')) {
                     baixo = false;
                 } else {
-                    float destino = (posy + 1) * tamanho_bloco;
-                    if (pacmanY < destino)
+                    float destino = (posy + 1) * tamanho_bloco;     // Destino do pacman (posição abaixo na grade)
+                    if (pacmanY < destino)      // Caso ainda não tenha chegado ao destino, continue movendo
                         pacmanY += velocidade * deltaTime;
-                    if (pacmanY > destino) {
+                    if (pacmanY > destino) {        // Se já chegou ao destino, ajuste a posição
                         pacmanY = destino;
                         posy++;
                     }
                 }
             }
             else if (esq) {
-                int proxX = (int)((pacmanX - velocidade * deltaTime) / tamanho_bloco);
                 if (alinhado && !((posx > 0 && mapa[posy][posx - 1] != '1') || (posx == 0 && posy == LINHA_DO_TUNEL))) {
                     esq = false;
                 } else {
-                    float destino = (posx - 1) * tamanho_bloco;
-                    if (pacmanX > destino)
+                    float destino = (posx - 1) * tamanho_bloco;     // Destino do pacman (posição à esquerda na grade)
+                    if (pacmanX > destino)      // Caso ainda não tenha chegado ao destino, continue movendo
                         pacmanX -= velocidade * deltaTime;
-                    if (pacmanX < destino) {
+                    if (pacmanX < destino) {        // Se já chegou ao destino, ajuste a posição    
                         pacmanX = destino;
                         posx--;
                     }
                 }
             }
             else if (dir) {
-                int proxX = (int)((pacmanX + velocidade * deltaTime) / tamanho_bloco);
                 if (alinhado && !((posx < 27 && mapa[posy][posx + 1] != '1') || (posx == 27 && posy == LINHA_DO_TUNEL))) {
                     dir = false;
                 } else {
-                    float destino = (posx + 1) * tamanho_bloco;
-                    if (pacmanX < destino)
+                    float destino = (posx + 1) * tamanho_bloco;     // Destino do pacman (posição à direita na grade)
+                    if (pacmanX < destino)      // Caso ainda não tenha chegado ao destino, continue movendo
                         pacmanX += velocidade * deltaTime;
-                    if (pacmanX > destino) {
+                    if (pacmanX > destino) {        // Se já chegou ao destino, ajuste a posição
                         pacmanX = destino;
                         posx++;
                     }
@@ -411,13 +407,31 @@ int main() {
             }
         }
 
-		// Linha do tunel (Travessia de uma extremidade a outra)
+        // Linha do tunel (Travessia de uma extremidade a outra)
         const int LINHA_DO_TUNEL = 14;
-        if (posx > 27 && posy == LINHA_DO_TUNEL) {
-            posx = 0;
-        }
-        else if (posx < 0 && posy == LINHA_DO_TUNEL) {
-            posx = 27;
+        if (posy == LINHA_DO_TUNEL) {
+            // Indo para a direita, saiu do limite direito
+            if (posx > 27) {
+                float destino = 0 * tamanho_bloco;
+                if (pacmanX < destino) {
+                    pacmanX += velocidade * deltaTime;
+                    if (pacmanX > destino) pacmanX = destino;
+                } else {
+                    pacmanX = destino;
+                    posx = 0;
+                }
+            }
+            // Indo para a esquerda, saiu do limite esquerdo
+            else if (posx < 0) {
+                float destino = 27 * tamanho_bloco;
+                if (pacmanX > destino) {
+                    pacmanX -= velocidade * deltaTime;
+                    if (pacmanX < destino) pacmanX = destino;
+                } else {
+                    pacmanX = destino;
+                    posx = 27;
+                }
+            }
         }
 
 		// Limpar a janela e desenhar os elementos
