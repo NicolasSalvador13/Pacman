@@ -5,7 +5,7 @@
 using namespace std;
 
 char mapa[30][29] = {
-	// 1 = parede, 0 = comida, 3 = poder, 4 = banana, 5 = morango, 6 = cereja, 2 = tunel
+	// 1 = parede, 0 = comida,  2 = tunel, 3 = poder, 4 = banana, 5 = morango, 6 = cereja
     "1111111111111111111111111111",
     "1000000000000110000000003001",
     "1011110111110110111110111101",
