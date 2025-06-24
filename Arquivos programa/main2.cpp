@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
+#include <cmath>
 using namespace std;
 
 char mapa[30][29] = {
@@ -58,6 +59,10 @@ int main() {
 
     float tamanho_pacman_real = tamanho_bloco * fator_pacman;   // Regula tamanho do pacman
 	float centralizar = (tamanho_bloco - tamanho_pacman_real) / 2.0f;  // constante para centralizar o pacman
+
+    float pacmanX = posx * tamanho_bloco;       // Posicao do pacman em pixels na horizontal
+    float pacmanY = posy * tamanho_bloco;       // Posicao do pacman em pixels na vertical
+    float velocidade = 100.f; // pixels por segundo
 
 	int largura_janela_total = tamanho_bloco * 28;      // Largura total da janela
 	int altura_janela_total = tamanho_bloco * 30 + 80;      // Altura total da janela (30 blocos + 80 pixels para a pontuacao e vidas)
@@ -260,14 +265,18 @@ int main() {
     spriteBaixo.setScale(tamanho_pacman_real / textureBaixo.getSize().x, tamanho_pacman_real / textureBaixo.getSize().y);
 
     sf::Clock clock;
+	sf::Clock deltaClock; // Relogio para controlar o tempo de movimento suave
 
 	// Variaveis para controlar a direcao
     while (window.isOpen()) {
+        float deltaTime = deltaClock.restart().asSeconds();
+
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
-
+        
+            // Verifica se uma tecla foi pressionada e atualiza as intenções de movimento
             if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Left) {
                     int_esq = true; int_dir = int_cima = int_baixo = false;
@@ -284,45 +293,95 @@ int main() {
             }
         }
 
-        if (clock.getElapsedTime() > sf::seconds(0.2)) {
+        if (clock.getElapsedTime() > sf::seconds(0.01)) { // Reduz o tempo para suavizar
             clock.restart();
             const int LINHA_DO_TUNEL = 14;
 
-        // Atualiza direção real com base na intenção, se possível
-        if (int_cima && posy > 0 && mapa[posy - 1][posx] != '1') {
-            cima = true; baixo = esq = dir = false;
-            olhacima = true; olhadireita = olhaesquerda = olhabaixo = false;
-        }
-        else if (int_baixo && posy < 29 && mapa[posy + 1][posx] != '1') {
-            baixo = true; cima = esq = dir = false;
-            olhabaixo = true; olhadireita = olhaesquerda = olhacima = false;
-        }
-        else if (int_esq && ((posx > 0 && mapa[posy][posx - 1] != '1') || (posx == 0 && posy == 14))) {
-            esq = true; dir = cima = baixo = false;
-            olhaesquerda = true; olhadireita = olhacima = olhabaixo = false;
-        }
-        else if (int_dir && ((posx < 27 && mapa[posy][posx + 1] != '1') || (posx == 27 && posy == 14))) {
-            dir = true; esq = cima = baixo = false;
-            olhadireita = true; olhaesquerda = olhacima = olhabaixo = false;
-        }
+            // Verifica se o Pac-Man está alinhado na grade
+            // Função fmod retorna o resto da divisao, se for 0, significa que está alinhado
+            bool alinhado = (fmod(pacmanX, tamanho_bloco) == 0) && (fmod(pacmanY, tamanho_bloco) == 0);
 
-        // Atualiza a posição do Pacman
-        if (cima && posy > 0 && mapa[posy - 1][posx] != '1')
-            posy--;
+            if (alinhado) {
+                // Atualiza posx e posy para garantir que estão corretos
+                posx = (int)(pacmanX / tamanho_bloco);
+                posy = (int)(pacmanY / tamanho_bloco);
 
-        if (baixo && posy < 29 && mapa[posy + 1][posx] != '1')
-            posy++;
-
-        if (esq) {
-            if ((posx > 0 && mapa[posy][posx - 1] != '1') || (posx == 0 && posy == LINHA_DO_TUNEL)) {
-                posx--;
+                // Atualiza direção real com base na intenção, se possível
+                if (int_cima && posy > 0 && mapa[posy - 1][posx] != '1') {
+                    cima = true; baixo = esq = dir = false;
+                    olhacima = true; olhadireita = olhaesquerda = olhabaixo = false;
+                }
+                else if (int_baixo && posy < 29 && mapa[posy + 1][posx] != '1') {
+                    baixo = true; cima = esq = dir = false;
+                    olhabaixo = true; olhadireita = olhaesquerda = olhacima = false;
+                }
+                else if (int_esq && ((posx > 0 && mapa[posy][posx - 1] != '1') || (posx == 0 && posy == 14))) {
+                    esq = true; dir = cima = baixo = false;
+                    olhaesquerda = true; olhadireita = olhacima = olhabaixo = false;
+                }
+                else if (int_dir && ((posx < 27 && mapa[posy][posx + 1] != '1') || (posx == 27 && posy == 14))) {
+                    dir = true; esq = cima = baixo = false;
+                    olhadireita = true; olhaesquerda = olhacima = olhabaixo = false;
+                }
             }
-        }
-        if (dir) {
-            if ((posx < 27 && mapa[posy][posx + 1] != '1') || (posx == 27 && posy == LINHA_DO_TUNEL)) {
-                posx++;
+
+            // Atualize a posição suavemente e só continue se não houver parede à frente
+            if (cima) {
+                int proxY = (int)((pacmanY - velocidade * deltaTime) / tamanho_bloco);
+                if (alinhado && (posy == 0 || mapa[posy - 1][posx] == '1')) {
+                    cima = false;
+                } else {
+                    float destino = (posy - 1) * tamanho_bloco;
+                    if (pacmanY > destino)
+                        pacmanY -= velocidade * deltaTime;
+                    if (pacmanY < destino) {
+                        pacmanY = destino;
+                        posy--;
+                    }
+                }
             }
-        }
+            else if (baixo) {
+                int proxY = (int)((pacmanY + velocidade * deltaTime) / tamanho_bloco);
+                if (alinhado && (posy == 29 || mapa[posy + 1][posx] == '1')) {
+                    baixo = false;
+                } else {
+                    float destino = (posy + 1) * tamanho_bloco;
+                    if (pacmanY < destino)
+                        pacmanY += velocidade * deltaTime;
+                    if (pacmanY > destino) {
+                        pacmanY = destino;
+                        posy++;
+                    }
+                }
+            }
+            else if (esq) {
+                int proxX = (int)((pacmanX - velocidade * deltaTime) / tamanho_bloco);
+                if (alinhado && !((posx > 0 && mapa[posy][posx - 1] != '1') || (posx == 0 && posy == LINHA_DO_TUNEL))) {
+                    esq = false;
+                } else {
+                    float destino = (posx - 1) * tamanho_bloco;
+                    if (pacmanX > destino)
+                        pacmanX -= velocidade * deltaTime;
+                    if (pacmanX < destino) {
+                        pacmanX = destino;
+                        posx--;
+                    }
+                }
+            }
+            else if (dir) {
+                int proxX = (int)((pacmanX + velocidade * deltaTime) / tamanho_bloco);
+                if (alinhado && !((posx < 27 && mapa[posy][posx + 1] != '1') || (posx == 27 && posy == LINHA_DO_TUNEL))) {
+                    dir = false;
+                } else {
+                    float destino = (posx + 1) * tamanho_bloco;
+                    if (pacmanX < destino)
+                        pacmanX += velocidade * deltaTime;
+                    if (pacmanX > destino) {
+                        pacmanX = destino;
+                        posx++;
+                    }
+                }
+            }
 
 			// Pontuacao e coleta de itens
 			if (mapa[posy][posx] == '0') {  // Se comer comida
@@ -402,19 +461,19 @@ int main() {
 
 		// Regula posicao do pacman e desenha o sprite correspondente
         if (olhadireita) {
-            spriteDir.setPosition(posx * tamanho_bloco + centralizar, posy * tamanho_bloco + centralizar);
+            spriteDir.setPosition(pacmanX + centralizar, pacmanY + centralizar);
             window.draw(spriteDir);
         }
         else if (olhaesquerda) {
-            spriteEsq.setPosition(posx * tamanho_bloco + centralizar, posy * tamanho_bloco + centralizar);
+            spriteEsq.setPosition(pacmanX + centralizar, pacmanY + centralizar);
             window.draw(spriteEsq);
         }
         else if (olhacima) {
-            spriteCima.setPosition(posx * tamanho_bloco + centralizar, posy * tamanho_bloco + centralizar);
+            spriteCima.setPosition(pacmanX + centralizar, pacmanY + centralizar);
             window.draw(spriteCima);
         }
         else if (olhabaixo) {
-            spriteBaixo.setPosition(posx * tamanho_bloco + centralizar, posy * tamanho_bloco + centralizar);
+            spriteBaixo.setPosition(pacmanX + centralizar, pacmanY + centralizar);
             window.draw(spriteBaixo);
         }
 
