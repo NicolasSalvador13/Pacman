@@ -62,7 +62,7 @@ int main() {
 
     float pacmanX = posx * tamanho_bloco;       // Posicao do pacman em pixels na horizontal
     float pacmanY = posy * tamanho_bloco;       // Posicao do pacman em pixels na vertical
-    float velocidade = 100.f; // pixels por segundo
+    float velocidade = 120.f; // pixels por segundo
 
 	int largura_janela_total = tamanho_bloco * 28;      // Largura total da janela
 	int altura_janela_total = tamanho_bloco * 30 + 80;      // Altura total da janela (30 blocos + 80 pixels para a pontuacao e vidas)
