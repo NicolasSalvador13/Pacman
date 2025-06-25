@@ -7,10 +7,72 @@ using namespace std;
 class Ghost {
     public:
     float posfx, posfy; // Posições do fantasma
+    float velocidade; // Velocidade do fantasma
+    float raio; // Raio do fantasma
     bool vivo; // Estado do fantasma (vivo ou morto)
     bool visivel; // Visibilidade do fantasma
+    float posfx_inicial, posfy_inicial; // Para resetar
+    int dirX, dirY; // Direção atual
+    sf::Sprite sprite; // Sprite do fantasma
 
+    Ghost(float x, float y, float vel, float r) {
+        posfx = x;
+        posfy = y;
+        velocidade = vel;
+        raio = r;
+        vivo = true;
+        visivel = true;
+    }
 
+    void mover(float deltaX, float deltaY) {
+        posfx += deltaX * velocidade;
+        posfy += deltaY * velocidade;
+    }
+
+    void desenhar(sf::RenderWindow& window) {
+        if (visivel) {
+            sf::CircleShape forma(raio);
+            forma.setPosition(posfx, posfy);
+            forma.setFillColor(sf::Color::Red);
+            window.draw(forma);
+        }
+    }
+
+    void atualizar() {
+        // Atualiza a lógica do fantasma (ex: movimento, colisões, etc.)
+    }
+    void resetar() {
+        posfx = 0;
+        posfy = 0;
+        vivo = true;
+        visivel = true;
+    }
+
+    void setDirecao(int dx, int dy) {
+        dirX = dx;
+        dirY = dy;
+    }
+
+    void perseguirPacman(float pacmanX, float pacmanY) {
+        // Lógica para perseguir o Pac-Man
+        if (pacmanX > posfx) {
+            dirX = 1;
+        } else {
+            dirX = -1;
+        }
+        if (pacmanY > posfy) {
+            dirY = 1;
+        } else {
+            dirY = -1;
+        }
+    }
+
+    bool colidiuComPacman(float pacmanX, float pacmanY, float raioPacman) {
+        float distanciaX = posfx - pacmanX;
+        float distanciaY = posfy - pacmanY;
+        float distancia = sqrt(distanciaX * distanciaX + distanciaY * distanciaY);
+        return distancia < (raio + raioPacman);
+    }
 
 };
 
