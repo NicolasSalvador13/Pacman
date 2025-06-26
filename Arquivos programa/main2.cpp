@@ -24,26 +24,20 @@ class Ghost {
         visivel = true;
     }
 
-    void mover(float deltaX, float deltaY) {
-        posfx += deltaX * velocidade;
-        posfy += deltaY * velocidade;
+    void mover(float deltaX, float deltaY, char mapa[30][29], float tamanho_bloco, float deltaTime) {
+ 
     }
 
     void desenhar(sf::RenderWindow& window) {
         if (visivel) {
-            sf::CircleShape forma(raio);
-            forma.setPosition(posfx, posfy);
-            forma.setFillColor(sf::Color::Red);
-            window.draw(forma);
+            sprite.setPosition(posfx, posfy);
+            window.draw(sprite);
         }
     }
 
-    void atualizar() {
-        // Atualiza a lógica do fantasma (ex: movimento, colisões, etc.)
-    }
     void resetar() {
-        posfx = 0;
-        posfy = 0;
+        posfx = 14;
+        posfy = 15;
         vivo = true;
         visivel = true;
     }
@@ -53,18 +47,9 @@ class Ghost {
         dirY = dy;
     }
 
-    void perseguirPacman(float pacmanX, float pacmanY) {
-        // Lógica para perseguir o Pac-Man
-        if (pacmanX > posfx) {
-            dirX = 1;
-        } else {
-            dirX = -1;
-        }
-        if (pacmanY > posfy) {
-            dirY = 1;
-        } else {
-            dirY = -1;
-        }
+    void perseguirPacman(float pacmanX, float pacmanY, char mapa[30][29], float tamanho_bloco) {
+        
+
     }
 
     bool colidiuComPacman(float pacmanX, float pacmanY, float raioPacman) {
@@ -336,6 +321,19 @@ int main() {
     spriteBaixo.setTexture(textureBaixo);
     spriteBaixo.setScale(tamanho_pacman_real / textureBaixo.getSize().x, tamanho_pacman_real / textureBaixo.getSize().y);
 
+    // Criacao dos fantasmas
+    Ghost fantasmaVermelho(13 * tamanho_bloco, 14 * tamanho_bloco, velocidade, tamanho_pacman_real / 2.0f);
+    fantasmaVermelho.sprite = spritefantasmavermelho;
+
+    Ghost fantasmaAzul(14 * tamanho_bloco, 14 * tamanho_bloco, velocidade, tamanho_pacman_real / 2.0f);
+    fantasmaAzul.sprite = spritefantasmaazul;
+
+    Ghost fantasmaRosa(13 * tamanho_bloco, 15 * tamanho_bloco, velocidade, tamanho_pacman_real / 2.0f);
+    fantasmaRosa.sprite = spritefantasmarosa;
+
+    Ghost fantasmaAmarelo(14 * tamanho_bloco, 15 * tamanho_bloco, velocidade, tamanho_pacman_real / 2.0f);
+    fantasmaAmarelo.sprite = spritefantasmaamarelo;
+
     sf::Clock clock;
 	sf::Clock deltaClock; // Relogio para controlar o tempo de movimento suave
 
@@ -477,6 +475,9 @@ int main() {
                 score += 100; // Pontos da cereja
                 scoreText.setString("Score: " + std::to_string(score));
             }
+
+            // Atualiza a posição do fantasma
+            
         }
 
         // Linha do tunel (Travessia de uma extremidade a outra)
@@ -568,6 +569,12 @@ int main() {
             spriteDir.setPosition((i * (tamanho_bloco + 5)) + 10, 30 * tamanho_bloco + 10);
             window.draw(spriteDir);
         }
+
+        // Desenhar o fantasma
+        fantasmaVermelho.desenhar(window);
+        fantasmaAzul.desenhar(window);
+        fantasmaRosa.desenhar(window);
+        fantasmaAmarelo.desenhar(window);
 
 		// Desenhar o texto de pontuacao
         window.draw(scoreText);
