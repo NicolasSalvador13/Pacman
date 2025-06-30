@@ -8,7 +8,6 @@ class Ghost {
     public:
     float posfx, posfy; // Posições do fantasma
     float velocidade; // Velocidade do fantasma
-    float raio; // Raio do fantasma
     bool vivo; // Estado do fantasma (vivo ou morto)
     bool visivel; // Visibilidade do fantasma
     float posfx_inicial, posfy_inicial; // Para resetar
