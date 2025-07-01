@@ -1,9 +1,13 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <cstdlib> 
+#include <ctime> 
 using namespace std;
 
+/*
 class Ghost {
     public:
     float posfx, posfy; // Posições do fantasma
@@ -11,22 +15,25 @@ class Ghost {
     float raio; // Raio do fantasma
     bool vivo; // Estado do fantasma (vivo ou morto)
     bool visivel; // Visibilidade do fantasma
-    float posfx_inicial, posfy_inicial; // Para resetar
-    int dirX, dirY; // Direção atual
     sf::Sprite sprite; // Sprite do fantasma
-
-    Ghost(float x, float y, float vel, float r) {
+   
+    
+    Ghost(float x, float y, float vel, float r,sf::Sprite initialSprite) {
         posfx = x;
         posfy = y;
         velocidade = vel;
         raio = r;
         vivo = true;
         visivel = true;
+        
     }
 
-    void mover(float deltaX, float deltaY, char mapa[30][29], float tamanho_bloco, float deltaTime) {
- 
+    void mover( float tamanho_bloco, float deltaTime) {
+        if (!vivo) return; // Fantasma morto não se move
+
+        
     }
+
 
     void desenhar(sf::RenderWindow& window) {
         if (visivel) {
@@ -59,7 +66,8 @@ class Ghost {
         return distancia < (raio + raioPacman);
     }
 
-};
+}; */
+ 
 
 char mapa[30][29] = {
 	// 1 = parede, 0 = comida, 3 = poder, 4 = banana, 5 = morango, 6 = cereja, 2 = tunel
@@ -104,7 +112,48 @@ bool olhaesquerda = false;
 bool olhacima = false;
 bool olhabaixo = false;
 
+/*void mostrarTelaInicio(sf::RenderWindow& window, sf::Font& font) {
+    sf::Text textoInicio("Pressione ENTER para comecar", font, 32);
+    textoInicio.setFillColor(sf::Color::Yellow);
+    textoInicio.setPosition(200, 400);
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) window.close();
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)
+                return;
+        }
+
+        window.clear(sf::Color::Black);
+        window.draw(textoInicio);
+        window.display();
+    }
+}
+
+void mostrarTelaFim(sf::RenderWindow& window, sf::Font& font, bool venceu, sf::Music& vitoriaMusic) {
+    sf::Text textoFim(venceu ? "VOCE VENCEU!" : "GAME OVER!", font, 40);
+    textoFim.setFillColor(sf::Color::White);
+    textoFim.setPosition(300, 400);
+
+    if (venceu) vitoriaMusic.play();
+
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) window.close();
+        }
+
+        window.clear(sf::Color::Black);
+        window.draw(textoFim);
+        window.display();
+    }
+}
+*/
+
 int main() {
+   
 	int vidas = 3;  // Variavel para armazenar o numero de vidas
 	int score = 0;  // Variavel para armazenar a pontuacao
 	float tamanho_bloco = 28;  // Tamanho do bloco em pixels
@@ -127,6 +176,48 @@ int main() {
 	// Criacao da janela
     sf::RenderWindow window(sf::VideoMode(largura_janela_total, altura_janela_total), "Pac-Man");
     window.setFramerateLimit(60);
+
+    
+
+    // Sons 
+    
+    sf::Music vitoriaMusic;
+    if (!vitoriaMusic.openFromFile("Sons/pacman-vitoria.mp3")) {
+        cout << "Erro ao carregar Sons/pacman-vitoria.mp3! Verifique o caminho." << endl;
+    }
+
+    sf::Music jogoMusic;
+    if (!jogoMusic.openFromFile("Sons/pacman-jogo.mp3")) {
+        cout << "Erro ao carregar Sons/pacman-jogo.mp3! Verifique o caminho." << endl;
+    }
+
+    sf::SoundBuffer bufferComePonto;
+    if (!bufferComePonto.loadFromFile("Sons/pacman-come-ponto.wav")) {
+        cout << "Erro ao carregar Sons/pacman-come-ponto.wav! Verifique o caminho." << endl;
+    }
+    sf::Sound somComePonto;
+    somComePonto.setBuffer(bufferComePonto);
+
+    sf::SoundBuffer bufferComeFruta;
+    if (!bufferComeFruta.loadFromFile("Sons/pacman-come-fruta.wav")) {
+        cout << "Erro ao carregar Sons/pacman-come-fruta.wav! Verifique o caminho." << endl;
+    }
+    sf::Sound somComeFruta;
+    somComeFruta.setBuffer(bufferComeFruta);
+
+    sf::SoundBuffer bufferComeFantasma;
+    if (!bufferComeFantasma.loadFromFile("Sons/pacman-come-fantasma.wav")) {
+        cout << "Erro ao carregar Sons/pacman-come-fantasma.wav! Verifique o caminho." << endl;
+    }
+    sf::Sound somComeFantasma;
+    somComeFantasma.setBuffer(bufferComeFantasma);
+
+    sf::SoundBuffer bufferPacmanMorre;
+    if (!bufferPacmanMorre.loadFromFile("Sons/pacman-morte.wav")) { 
+        cout << "Erro ao carregar Sons/pacman-morte.wav! Verifique o caminho." << endl;
+    }
+    sf::Sound somPacmanMorre;
+    somPacmanMorre.setBuffer(bufferPacmanMorre);
 
 	// Criacao dos objetos graficos
     // Paredes, comida e poder
@@ -159,7 +250,7 @@ int main() {
 	scoreText.setPosition(centerX - 5, centerY - 5);    // <-- Ajuste de posicao para centralizar o texto
 
     // --- Carregamento de todas as texturas dos fantasmas ---
-
+/*
     // Fantasma vermelho (o original do seu exemplo)
     sf::Texture texturefantasmavermelho;
     if (!texturefantasmavermelho.loadFromFile("fantasmavermelho.png")) { return 1; } // Caso nao consiga carregar a textura do fantasma vermelho
@@ -271,7 +362,7 @@ int main() {
     sf::Sprite spritefantasmaazulcima;
     spritefantasmaazulcima.setTexture(texturefantasmaazulcima);
     spritefantasmaazulcima.setScale(tamanho_pacman_real / texturefantasmaazulcima.getSize().x, tamanho_pacman_real / texturefantasmaazulcima.getSize().y);   // Controla tamanho do fantasma
-
+*/
     //Tamanho banana
     sf::Texture texturebanana;
 	if (!texturebanana.loadFromFile("banana.png")) { return 1; }    // Caso nao consiga carregar a textura da banana
@@ -321,7 +412,7 @@ int main() {
     spriteBaixo.setTexture(textureBaixo);
     spriteBaixo.setScale(tamanho_pacman_real / textureBaixo.getSize().x, tamanho_pacman_real / textureBaixo.getSize().y);
 
-    // Criacao dos fantasmas
+ /*   // Criacao dos fantasmas
     Ghost fantasmaVermelho(13 * tamanho_bloco, 14 * tamanho_bloco, velocidade, tamanho_pacman_real / 2.0f);
     fantasmaVermelho.sprite = spritefantasmavermelho;
 
@@ -333,7 +424,7 @@ int main() {
 
     Ghost fantasmaAmarelo(14 * tamanho_bloco, 15 * tamanho_bloco, velocidade, tamanho_pacman_real / 2.0f);
     fantasmaAmarelo.sprite = spritefantasmaamarelo;
-
+*/
     sf::Clock clock;
 	sf::Clock deltaClock; // Relogio para controlar o tempo de movimento suave
 
@@ -454,6 +545,7 @@ int main() {
                 mapa[posy][posx] = ' ';
 				score += 10;    // Pontos da comida
                 scoreText.setString("Score: " + to_string(score));
+                somComePonto.play(); // Toca o som de comer ponto
             }
 			else if (mapa[posy][posx] == '3') {     // Se comer poder
                 mapa[posy][posx] = ' ';
@@ -464,16 +556,19 @@ int main() {
                 mapa[posy][posx] = ' ';
                 score += 100; // Pontos da banana
                 scoreText.setString("Score: " + to_string(score));
+                somComeFruta.play(); // Toca o som de comer fruta
             }
             else if (mapa[posy][posx] == '5') { // Se comer morango
                 mapa[posy][posx] = ' ';
                 score += 100; // Pontos do morango
                 scoreText.setString("Score: " + to_string(score));
+                somComeFruta.play(); // Toca o som de comer fruta
             }
             else if (mapa[posy][posx] == '6') { // Se comer cereja
                 mapa[posy][posx] = ' ';
                 score += 100; // Pontos da cereja
                 scoreText.setString("Score: " + std::to_string(score));
+                somComeFruta.play(); // Toca o som de comer fruta
             }
 
             // Atualiza a posição do fantasma
@@ -569,7 +664,7 @@ int main() {
             spriteDir.setPosition((i * (tamanho_bloco + 5)) + 10, 30 * tamanho_bloco + 10);
             window.draw(spriteDir);
         }
-
+/*
         // Desenhar o fantasma
         fantasmaVermelho.desenhar(window);
         fantasmaAzul.desenhar(window);
@@ -580,6 +675,11 @@ int main() {
         window.draw(scoreText);
         window.display();
     }
-
+*/
+ /*   // Tela de fim
+    bool venceu = (score >= 2440); 
+    mostrarTelaFim(window, font, venceu, vitoriaMusic);
+*/
     return 0;
+    }
 }
