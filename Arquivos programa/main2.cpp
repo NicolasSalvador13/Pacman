@@ -2,62 +2,129 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
+#include <algorithm>
+#include <random>
 using namespace std;
 
 class Ghost {
     public:
-    float posfx, posfy; // Posições do fantasma
-    float velocidade; // Velocidade do fantasma
-    bool vivo; // Estado do fantasma (vivo ou morto)
-    bool visivel; // Visibilidade do fantasma
-    float posfx_inicial, posfy_inicial; // Para resetar
-    int dirX, dirY; // Direção atual
-    sf::Sprite sprite; // Sprite do fantasma
+    int blocoX, blocoY; // Posição do fantasma em blocos
+    int dirX, dirY;     // Direção atual
+    float posX, posY;
+    bool vivo;
+    bool visivel;
+    bool fantasmaolhadireita = true;
+    bool fantasmaolhaesquerda = false;
+    bool fantasmaolhacima = false;
+    bool fantasmaolhabaixo = false;
+    sf::Sprite spriteDir, spriteEsq, spriteCima, spriteBaixo;
 
-    Ghost(float x, float y, float vel, float r) {
-        posfx = x;
-        posfy = y;
-        velocidade = vel;
-        raio = r;
+    Ghost(int x, int y, 
+        const sf::Sprite& sprDir, const sf::Sprite& sprEsq, 
+        const sf::Sprite& sprCima, const sf::Sprite& sprBaixo,
+        float tamanho_bloco) 
+    {
+        blocoX = x;
+        blocoY = y;
+        posX = x * tamanho_bloco; // Inicialização visual
+        posY = y * tamanho_bloco;
+        dirX = 0;
+        dirY = 0;
         vivo = true;
         visivel = true;
+        spriteDir = sprDir;
+        spriteEsq = sprEsq;
+        spriteCima = sprCima;
+        spriteBaixo = sprBaixo;
     }
 
-    void mover(float deltaX, float deltaY, char mapa[30][29], float tamanho_bloco, float deltaTime) {
- 
+    void movimento_aleatorio(char mapa[30][29]) {
+        // Só muda de direção se estiver alinhado na grade (sempre está, pois só move em blocos)
+        std::vector<std::pair<int, int>> direcoes = { {1,0}, {-1,0}, {0,1}, {0,-1} };
+        // Remove a direção oposta à atual, se possível
+        direcoes.erase(std::remove_if(direcoes.begin(), direcoes.end(),
+            [this](const std::pair<int,int>& d) {
+                return (d.first == -dirX && d.second == -dirY);
+            }), direcoes.end());
+        // Embaralha as direções
+        static std::random_device rd;
+        static std::mt19937 g(rd());
+        std::shuffle(direcoes.begin(), direcoes.end(), g);
+        // Tenta cada direção aleatória até achar uma livre
+        for (auto& d : direcoes) {
+            int novoX = blocoX + d.first;
+            int novoY = blocoY + d.second;
+            if (novoX >= 0 && novoX < 28 && novoY >= 0 && novoY < 30 && mapa[novoY][novoX] != '1') {
+                dirX = d.first;
+                dirY = d.second;
+                return;
+            }
+        }
+        // Se não encontrou nenhuma direção livre, para
+        dirX = 0;
+        dirY = 0;
     }
 
-    void desenhar(sf::RenderWindow& window) {
-        if (visivel) {
-            sprite.setPosition(posfx, posfy);
-            window.draw(sprite);
+    void mover(char mapa[30][29]) {
+        int proxX = blocoX + dirX;
+        int proxY = blocoY + dirY;
+        if (dirX == 0 && dirY == 0) return; // parado
+        if (proxX >= 0 && proxX < 28 && proxY >= 0 && proxY < 30 && mapa[proxY][proxX] != '1') {
+            blocoX = proxX;
+            blocoY = proxY;
+        } else {
+            dirX = 0;
+            dirY = 0;
+        }
+    }
+
+    void desenhar(sf::RenderWindow& window, float tamanho_bloco, float centralizar) {
+        if (!visivel) return;
+        // Atualiza a direção visual automaticamente
+        if (dirX > 0) {
+            fantasmaolhadireita = true;
+            fantasmaolhaesquerda = fantasmaolhacima = fantasmaolhabaixo = false;
+        } else if (dirX < 0) {
+            fantasmaolhaesquerda = true;
+            fantasmaolhadireita = fantasmaolhacima = fantasmaolhabaixo = false;
+        } else if (dirY < 0) {
+            fantasmaolhacima = true;
+            fantasmaolhadireita = fantasmaolhaesquerda = fantasmaolhabaixo = false;
+        } else if (dirY > 0) {
+            fantasmaolhabaixo = true;
+            fantasmaolhadireita = fantasmaolhaesquerda = fantasmaolhacima = false;
+        }
+        float px = posX + centralizar;
+        float py = posY + centralizar;
+        if (fantasmaolhadireita) {
+            spriteDir.setPosition(px, py);
+            window.draw(spriteDir);
+        } else if (fantasmaolhaesquerda) {
+            spriteEsq.setPosition(px, py);
+            window.draw(spriteEsq);
+        } else if (fantasmaolhacima) {
+            spriteCima.setPosition(px, py);
+            window.draw(spriteCima);
+        } else if (fantasmaolhabaixo) {
+            spriteBaixo.setPosition(px, py);
+            window.draw(spriteBaixo);
+        } else {
+            spriteDir.setPosition(px, py);
+            window.draw(spriteDir);
         }
     }
 
     void resetar() {
-        posfx = 14;
-        posfy = 15;
+        blocoX = 14;
+        blocoY = 15;
         vivo = true;
         visivel = true;
+        dirX = 0;
+        dirY = 0;
     }
-
-    void setDirecao(int dx, int dy) {
-        dirX = dx;
-        dirY = dy;
-    }
-
-    void perseguirPacman(float pacmanX, float pacmanY, char mapa[30][29], float tamanho_bloco) {
-        
-
-    }
-
-    bool colidiuComPacman(float pacmanX, float pacmanY, float raioPacman) {
-        float distanciaX = posfx - pacmanX;
-        float distanciaY = posfy - pacmanY;
-        float distancia = sqrt(distanciaX * distanciaX + distanciaY * distanciaY);
-        return distancia < (raio + raioPacman);
-    }
-
 };
 
 char mapa[30][29] = {
@@ -118,7 +185,7 @@ int main() {
 
     float pacmanX = posx * tamanho_bloco;       // Posicao do pacman em pixels na horizontal
     float pacmanY = posy * tamanho_bloco;       // Posicao do pacman em pixels na vertical
-    float velocidade = 120.f; // pixels por segundo
+    float velocidade = 100.f; // pixels por segundo
 
 	int largura_janela_total = tamanho_bloco * 28;      // Largura total da janela
 	int altura_janela_total = tamanho_bloco * 30 + 80;      // Altura total da janela (30 blocos + 80 pixels para a pontuacao e vidas)
@@ -321,21 +388,38 @@ int main() {
     spriteBaixo.setScale(tamanho_pacman_real / textureBaixo.getSize().x, tamanho_pacman_real / textureBaixo.getSize().y);
 
     // Criacao dos fantasmas
-    Ghost fantasmaVermelho(13 * tamanho_bloco, 14 * tamanho_bloco, velocidade, tamanho_pacman_real / 2.0f);
-    fantasmaVermelho.sprite = spritefantasmavermelho;
+    Ghost fantasmaVermelho(
+        13, 14, // posição em blocos
+        spritefantasmavermelho, spritefantasmavermelhoesquerda,
+        spritefantasmavermelhocima, spritefantasmavermelhobaixo,
+        tamanho_bloco
+    );
 
-    Ghost fantasmaAzul(14 * tamanho_bloco, 14 * tamanho_bloco, velocidade, tamanho_pacman_real / 2.0f);
-    fantasmaAzul.sprite = spritefantasmaazul;
+    Ghost fantasmaAmarelo(
+        14, 14, // posição em blocos
+        spritefantasmaamarelo, spritefantasmaamareloesquerda,
+        spritefantasmaamarelocima, spritefantasmaamarelobaixo,
+        tamanho_bloco
+    );
 
-    Ghost fantasmaRosa(13 * tamanho_bloco, 15 * tamanho_bloco, velocidade, tamanho_pacman_real / 2.0f);
-    fantasmaRosa.sprite = spritefantasmarosa;
+    Ghost fantasmaRosa(
+        15, 14, // posição em blocos
+        spritefantasmarosa, spritefantasmarosaesquerda,
+        spritefantasmarosacima, spritefantasmarosabaixo,
+        tamanho_bloco
+    );
 
-    Ghost fantasmaAmarelo(14 * tamanho_bloco, 15 * tamanho_bloco, velocidade, tamanho_pacman_real / 2.0f);
-    fantasmaAmarelo.sprite = spritefantasmaamarelo;
+    Ghost fantasmaAzul(
+        16, 14, // posição em blocos
+        spritefantasmaazul, spritefantasmaazulesquerda,
+        spritefantasmaazulcima, spritefantasmaazulbaixo,
+        tamanho_bloco
+    );
 
     sf::Clock clock;
 	sf::Clock deltaClock; // Relogio para controlar o tempo de movimento suave
-
+    sf::Clock ghostClock;
+    float ghostDelay = 0.2f; // tempo em segundos entre cada movimento do fantasma (aumente para mais lento)
 	// Variaveis para controlar a direcao
     while (window.isOpen()) {
         float deltaTime = deltaClock.restart().asSeconds();
@@ -569,12 +653,32 @@ int main() {
             window.draw(spriteDir);
         }
 
-        // Desenhar o fantasma
-        fantasmaVermelho.desenhar(window);
-        fantasmaAzul.desenhar(window);
-        fantasmaRosa.desenhar(window);
-        fantasmaAmarelo.desenhar(window);
-
+        fantasmaVermelho.posX += ((fantasmaVermelho.blocoX * tamanho_bloco) - fantasmaVermelho.posX) * 0.2f;
+        fantasmaVermelho.posY += ((fantasmaVermelho.blocoY * tamanho_bloco) - fantasmaVermelho.posY) * 0.2f;
+        fantasmaAmarelo.posX += ((fantasmaAmarelo.blocoX * tamanho_bloco) - fantasmaAmarelo.posX) * 0.2f;
+        fantasmaAmarelo.posY += ((fantasmaAmarelo.blocoY * tamanho_bloco) - fantasmaAmarelo.posY) * 0.2f;
+        fantasmaRosa.posX += ((fantasmaRosa.blocoX * tamanho_bloco) - fantasmaRosa.posX) * 0.2f;
+        fantasmaRosa.posY += ((fantasmaRosa.blocoY * tamanho_bloco) - fantasmaRosa.posY) * 0.2f;
+        fantasmaAzul.posX += ((fantasmaAzul.blocoX * tamanho_bloco) - fantasmaAzul.posX) * 0.2f;
+        fantasmaAzul.posY += ((fantasmaAzul.blocoY * tamanho_bloco) - fantasmaAzul.posY) * 0.2f;
+        
+        if (ghostClock.getElapsedTime().asSeconds() > ghostDelay) {
+            fantasmaVermelho.movimento_aleatorio(mapa);
+            fantasmaAmarelo.movimento_aleatorio(mapa);
+            fantasmaRosa.movimento_aleatorio(mapa);
+            fantasmaAzul.movimento_aleatorio(mapa);
+            
+            fantasmaVermelho.mover(mapa);
+            fantasmaAmarelo.mover(mapa);
+            fantasmaRosa.mover(mapa);
+            fantasmaAzul.mover(mapa);
+            ghostClock.restart();
+        }
+        
+        fantasmaVermelho.desenhar(window, tamanho_bloco, centralizar);
+        fantasmaAmarelo.desenhar(window, tamanho_bloco, centralizar);
+        fantasmaRosa.desenhar(window, tamanho_bloco, centralizar);
+        fantasmaAzul.desenhar(window, tamanho_bloco, centralizar);
 		// Desenhar o texto de pontuacao
         window.draw(scoreText);
         window.display();
