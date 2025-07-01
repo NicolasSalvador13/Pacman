@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -194,6 +195,51 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(largura_janela_total, altura_janela_total), "Pac-Man");
     window.setFramerateLimit(60);
 
+    // Sons 
+    sf::Music vitoriaMusic;
+    if (!vitoriaMusic.openFromFile("Sons/pacman-vitoria.mp3")) {
+        cout << "Erro ao carregar Sons/pacman-vitoria.mp3! Verifique o caminho." << endl;
+    }
+
+    sf::Music jogoMusic;
+    if (!jogoMusic.openFromFile("Sons/pacman-jogo.mp3")) {
+        cout << "Erro ao carregar Sons/pacman-jogo.mp3! Verifique o caminho." << endl;
+    }
+    else {
+    jogoMusic.setLoop(true);     // Musica repete em loop
+    jogoMusic.setVolume(100);    // Garante volume maximo
+    jogoMusic.play();            // Toca a musica
+}
+
+    sf::SoundBuffer bufferComePonto;
+    if (!bufferComePonto.loadFromFile("Sons/pacman-come-ponto.wav")) {
+        cout << "Erro ao carregar Sons/pacman-come-ponto.wav! Verifique o caminho." << endl;
+    }
+    sf::Sound somComePonto;
+    somComePonto.setBuffer(bufferComePonto);
+
+    sf::SoundBuffer bufferComeFruta;
+    if (!bufferComeFruta.loadFromFile("Sons/pacman-come-fruta.wav")) {
+        cout << "Erro ao carregar Sons/pacman-come-fruta.wav! Verifique o caminho." << endl;
+    }
+    sf::Sound somComeFruta;
+    somComeFruta.setBuffer(bufferComeFruta);
+
+    sf::SoundBuffer bufferComeFantasma;
+    if (!bufferComeFantasma.loadFromFile("Sons/pacman-come-fantasma.wav")) {
+        cout << "Erro ao carregar Sons/pacman-come-fantasma.wav! Verifique o caminho." << endl;
+    }
+    sf::Sound somComeFantasma;
+    somComeFantasma.setBuffer(bufferComeFantasma);
+
+    sf::SoundBuffer bufferPacmanMorre;
+    if (!bufferPacmanMorre.loadFromFile("Sons/pacman-morte.wav")) { 
+        cout << "Erro ao carregar Sons/pacman-morte.wav! Verifique o caminho." << endl;
+    }
+    sf::Sound somPacmanMorre;
+    somPacmanMorre.setBuffer(bufferPacmanMorre);
+
+
 	// Criacao dos objetos graficos
     // Paredes, comida e poder
     sf::RectangleShape rectangle(sf::Vector2f(tamanho_bloco, tamanho_bloco));
@@ -211,6 +257,33 @@ int main() {
         cout << "Erro: Nao foi possivel carregar a fonte!" << endl;
         return 1;
     }
+    
+    // Tela inicio
+    sf::Text textoInicio;
+    textoInicio.setFont(font);
+    textoInicio.setCharacterSize(35);
+    textoInicio.setFillColor(sf::Color::Yellow);
+    textoInicio.setString("Pressione ENTER para comecar");
+
+    sf::FloatRect textoBounds = textoInicio.getLocalBounds();
+    textoInicio.setOrigin(textoBounds.width / 2, textoBounds.height / 2);
+    textoInicio.setPosition(largura_janela_total / 2, altura_janela_total / 2);
+
+    bool iniciou = false;
+    while (!iniciou) {
+        sf::Event evento;
+        while (window.pollEvent(evento)) {
+            if (evento.type == sf::Event::Closed)
+                window.close();
+            if (evento.type == sf::Event::KeyPressed && evento.key.code == sf::Keyboard::Enter)
+                iniciou = true;
+        }
+
+        window.clear(sf::Color::Black);
+        window.draw(textoInicio);
+        window.display();
+    }
+
 
 	// Configurar o texto de pontuacao
     sf::Text scoreText;
@@ -222,9 +295,9 @@ int main() {
 	scoreText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);  // Centraliza o texto
 	float centerX = largura_janela_total / 2.0f;    // Centraliza o texto na largura da janela
 	float centerY = 20.0f;      // Centraliza o texto na altura da janela
-	scoreText.setPosition(centerX - 5, centerY - 5);    // <-- Ajuste de posicao para centralizar o texto
+	scoreText.setPosition(centerX - 5, centerY - 5);    // Ajuste de posicao para centralizar o texto
 
-    // --- Carregamento de todas as texturas dos fantasmas ---
+    // Carregamento de todas as texturas dos fantasmas
 
     // Fantasma vermelho (o original do seu exemplo)
     sf::Texture texturefantasmavermelho;
@@ -419,10 +492,11 @@ int main() {
     sf::Clock clock;
 	sf::Clock deltaClock; // Relogio para controlar o tempo de movimento suave
     sf::Clock ghostClock;
-    float ghostDelay = 0.2f; // tempo em segundos entre cada movimento do fantasma (aumente para mais lento)
+    float ghostDelay = 0.3f; // tempo em segundos entre cada movimento do fantasma 
 	// Variaveis para controlar a direcao
     while (window.isOpen()) {
         float deltaTime = deltaClock.restart().asSeconds();
+
 
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -493,7 +567,9 @@ int main() {
                 }
             }
             else if (baixo) {
-                if (alinhado && (posy == 29 || mapa[posy + 1][posx] == '1')) {
+                if (alinhado && (posy == 29 || mapa[
+                    
+                    posy + 1][posx] == '1')) {
                     baixo = false;
                 } else {
                     float destino = (posy + 1) * tamanho_bloco;     // Destino do pacman (posição abaixo na grade)
@@ -537,6 +613,7 @@ int main() {
                 mapa[posy][posx] = ' ';
 				score += 10;    // Pontos da comida
                 scoreText.setString("Score: " + to_string(score));
+                somComePonto.play(); // Toca o som de comer ponto
             }
 			else if (mapa[posy][posx] == '3') {     // Se comer poder
                 mapa[posy][posx] = ' ';
@@ -547,16 +624,19 @@ int main() {
                 mapa[posy][posx] = ' ';
                 score += 100; // Pontos da banana
                 scoreText.setString("Score: " + to_string(score));
+                somComeFruta.play(); // Toca o som de comer fruta
             }
             else if (mapa[posy][posx] == '5') { // Se comer morango
                 mapa[posy][posx] = ' ';
                 score += 100; // Pontos do morango
                 scoreText.setString("Score: " + to_string(score));
+                somComeFruta.play(); // Toca o som de comer fruta
             }
             else if (mapa[posy][posx] == '6') { // Se comer cereja
                 mapa[posy][posx] = ' ';
                 score += 100; // Pontos da cereja
                 scoreText.setString("Score: " + std::to_string(score));
+                somComeFruta.play(); // Toca o som de comer fruta
             }
 
             // Atualiza a posição do fantasma
@@ -681,6 +761,52 @@ int main() {
         fantasmaAzul.desenhar(window, tamanho_bloco, centralizar);
 		// Desenhar o texto de pontuacao
         window.draw(scoreText);
+        
+    //Verifica vitoria
+    bool ganhou = true;
+    for (int i = 0; i < 30; ++i) {
+        for (int j = 0; j < 28; ++j) {
+            if (mapa[i][j] == '0' || mapa[i][j] == '3' || mapa[i][j] == '4' || mapa[i][j] == '5' || mapa[i][j] == '6') {
+                ganhou = false;
+                break;
+            }
+        }
+        if (!ganhou) break;
+    }
+
+     if (ganhou) {
+        jogoMusic.stop();        
+        vitoriaMusic.play();     
+
+        sf::Text mensagemVitoria;
+        mensagemVitoria.setFont(font);
+        mensagemVitoria.setCharacterSize(50);
+        mensagemVitoria.setFillColor(sf::Color::Green);
+        mensagemVitoria.setString("VOCE VENCEU!");
+        sf::FloatRect textRect = mensagemVitoria.getLocalBounds();
+        mensagemVitoria.setOrigin(textRect.width / 2, textRect.height / 2);
+        mensagemVitoria.setPosition(largura_janela_total / 2, altura_janela_total / 2);
+
+        // Mostra a mensagem por 5 segundos
+        sf::Clock fimClock;
+        while (fimClock.getElapsedTime().asSeconds() < 5.f) {
+            window.clear(sf::Color::Black);
+            window.draw(mensagemVitoria);
+            window.display();
+        }
+
+        window.close();
+    }
+
+
+    // Verifica derrota
+        if (vidas <= 0) {
+        jogoMusic.stop();        // Para a música de fundo
+        somPacmanMorre.play();   // Toca som de morte
+        sf::sleep(sf::seconds(3)); // Espera 3 segundos
+        window.close();          // Fecha o jogo
+    }
+
         window.display();
     }
 
