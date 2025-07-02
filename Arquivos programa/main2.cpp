@@ -23,10 +23,10 @@ class Ghost {
     bool fantasmaolhabaixo = false;
     sf::Sprite spriteDir, spriteEsq, spriteCima, spriteBaixo;
 
-    Ghost(int x, int y, 
-        const sf::Sprite& sprDir, const sf::Sprite& sprEsq, 
+    Ghost(int x, int y,
+        const sf::Sprite& sprDir, const sf::Sprite& sprEsq,
         const sf::Sprite& sprCima, const sf::Sprite& sprBaixo,
-        float tamanho_bloco) 
+        float tamanho_bloco)
     {
         blocoX = x;
         blocoY = y;
@@ -129,7 +129,7 @@ class Ghost {
 };
 
 char mapa[30][29] = {
-	// 1 = parede, 0 = comida, 3 = poder, 4 = banana, 5 = morango, 6 = cereja, 2 = tunel
+    // 1 = parede, 0 = comida, 3 = poder, 4 = banana, 5 = morango, 6 = cereja, 2 = tunel
     "1111111111111111111111111111",
     "1000000000000110000000003001",
     "1011110111110110111110111101",
@@ -158,12 +158,12 @@ char mapa[30][29] = {
     "1300000110000110000110000001",
     "1011111111110110111111111101",
     "1011111111110110111111111131",
-    "1006000000300000000000000001",
+    "1000000003000000000000000001",
     "1111111111111111111111111111"
 };
 
-int posx = 4, posy = 5;     // Posicao inicial do pacman
-bool cima = false, baixo = false, esq = false, dir = false;     // Booleanos para controle da movimentacao
+int posx = 4, posy = 5;      // Posicao inicial do pacman
+bool cima = false, baixo = false, esq = false, dir = false;      // Booleanos para controle da movimentacao
 bool int_cima = false, int_baixo = false, int_esq = false, int_dir = false; // Variaveis para controle da intencao de movimentacao
 
 bool olhadireita = true;
@@ -172,30 +172,37 @@ bool olhacima = false;
 bool olhabaixo = false;
 
 int main() {
-	int vidas = 3;  // Variavel para armazenar o numero de vidas
-	int score = 0;  // Variavel para armazenar a pontuacao
-	float tamanho_bloco = 28;  // Tamanho do bloco em pixels
-	float fator_pacman = 0.85f; // Fator de controle do tamanho do pacman
-	float raio_comida = 3.f;  // Raio da comida
-	float raio_poder = 8.f;  // Raio do poder
-	float centralizar_comida = (tamanho_bloco / 2.0f) - raio_comida;  // constante para centralizar a comida
-	float centralizar_poder = (tamanho_bloco / 2.0f) - raio_poder;  // constante para centralizar o poder
+    int vidas = 3;  // Variavel para armazenar o numero de vidas
+    int score = 0;  // Variavel para armazenar a pontuacao
+    bool pacmanmorto = false; // NOVA VARIAVEL: controla se o Pac-Man morreu
+    float tamanho_bloco = 28;   // Tamanho do bloco em pixels
+    float fator_pacman = 0.85f; // Fator de controle do tamanho do pacman
+    float raio_comida = 3.f;  // Raio da comida
+    float raio_poder = 8.f;  // Raio do poder
+    float centralizar_comida = (tamanho_bloco / 2.0f) - raio_comida;  // constante para centralizar a comida
+    float centralizar_poder = (tamanho_bloco / 2.0f) - raio_poder;  // constante para centralizar o poder
 
     float tamanho_pacman_real = tamanho_bloco * fator_pacman;   // Regula tamanho do pacman
-	float centralizar = (tamanho_bloco - tamanho_pacman_real) / 2.0f;  // constante para centralizar o pacman
+    float centralizar = (tamanho_bloco - tamanho_pacman_real) / 2.0f;  // constante para centralizar o pacman
 
     float pacmanX = posx * tamanho_bloco;       // Posicao do pacman em pixels na horizontal
     float pacmanY = posy * tamanho_bloco;       // Posicao do pacman em pixels na vertical
     float velocidade = 100.f; // pixels por segundo
 
-	int largura_janela_total = tamanho_bloco * 28;      // Largura total da janela
-	int altura_janela_total = tamanho_bloco * 30 + 80;      // Altura total da janela (30 blocos + 80 pixels para a pontuacao e vidas)
+    // --- NOVAS VARIÁVEIS PARA ANIMAÇÃO DA BOCA (Adicionado) ---
+    sf::Clock pacmanAnimClock;
+    sf::Time pacmanAnimInterval = sf::seconds(0.08f); // Intervalo rápido para abrir/fechar a boca
+    bool pacmanBocaAberta = true;
+    // --- FIM DAS NOVAS VARIÁVEIS ---
 
-	// Criacao da janela
+    int largura_janela_total = tamanho_bloco * 28;      // Largura total da janela
+    int altura_janela_total = tamanho_bloco * 30 + 80;      // Altura total da janela (30 blocos + 80 pixels para a pontuacao e vidas)
+
+    // Criacao da janela
     sf::RenderWindow window(sf::VideoMode(largura_janela_total, altura_janela_total), "Pac-Man");
     window.setFramerateLimit(60);
 
-    // Sons 
+    // Sons
     sf::Music vitoriaMusic;
     if (!vitoriaMusic.openFromFile("Sons/pacman-vitoria.mp3")) {
         cout << "Erro ao carregar Sons/pacman-vitoria.mp3! Verifique o caminho." << endl;
@@ -206,9 +213,9 @@ int main() {
         cout << "Erro ao carregar Sons/pacman-jogo.mp3! Verifique o caminho." << endl;
     }
     else {
-    jogoMusic.setLoop(true);     // Musica repete em loop
+    jogoMusic.setLoop(true);    // Musica repete em loop
     jogoMusic.setVolume(100);    // Garante volume maximo
-    jogoMusic.play();            // Toca a musica
+    jogoMusic.play();           // Toca a musica
 }
 
     sf::SoundBuffer bufferComePonto;
@@ -233,14 +240,14 @@ int main() {
     somComeFantasma.setBuffer(bufferComeFantasma);
 
     sf::SoundBuffer bufferPacmanMorre;
-    if (!bufferPacmanMorre.loadFromFile("Sons/pacman-morte.wav")) { 
+    if (!bufferPacmanMorre.loadFromFile("Sons/pacman-morte.wav")) {
         cout << "Erro ao carregar Sons/pacman-morte.wav! Verifique o caminho." << endl;
     }
     sf::Sound somPacmanMorre;
     somPacmanMorre.setBuffer(bufferPacmanMorre);
 
 
-	// Criacao dos objetos graficos
+    // Criacao dos objetos graficos
     // Paredes, comida e poder
     sf::RectangleShape rectangle(sf::Vector2f(tamanho_bloco, tamanho_bloco));
     rectangle.setFillColor(sf::Color(0, 35, 102));
@@ -251,13 +258,13 @@ int main() {
     sf::CircleShape poder(raio_poder);
     poder.setFillColor(sf::Color::White);
 
-	// Carregar a fonte para o texto
+    // Carregar a fonte para o texto
     sf::Font font;
     if (!font.loadFromFile("Oxanium-ExtraBold.ttf")) {
         cout << "Erro: Nao foi possivel carregar a fonte!" << endl;
         return 1;
     }
-    
+
     // Tela inicio
     sf::Text textoInicio;
     textoInicio.setFont(font);
@@ -285,17 +292,17 @@ int main() {
     }
 
 
-	// Configurar o texto de pontuacao
+    // Configurar o texto de pontuacao
     sf::Text scoreText;
     scoreText.setFont(font);
     scoreText.setCharacterSize(24);
     scoreText.setFillColor(sf::Color::White);
     scoreText.setString("Score: 0");
-	sf::FloatRect textRect = scoreText.getLocalBounds();  // Obtém o retangulo delimitador do texto
-	scoreText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);  // Centraliza o texto
-	float centerX = largura_janela_total / 2.0f;    // Centraliza o texto na largura da janela
-	float centerY = 20.0f;      // Centraliza o texto na altura da janela
-	scoreText.setPosition(centerX - 5, centerY - 5);    // Ajuste de posicao para centralizar o texto
+    sf::FloatRect textRect = scoreText.getLocalBounds();   // Obtém o retangulo delimitador do texto
+    scoreText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);   // Centraliza o texto
+    float centerX = largura_janela_total / 2.0f;    // Centraliza o texto na largura da janela
+    float centerY = 20.0f;       // Centraliza o texto na altura da janela
+    scoreText.setPosition(centerX - 5, centerY - 5);    // Ajuste de posicao para centralizar o texto
 
     // Carregamento de todas as texturas dos fantasmas
 
@@ -413,14 +420,14 @@ int main() {
 
     //Tamanho banana
     sf::Texture texturebanana;
-	if (!texturebanana.loadFromFile("banana.png")) { return 1; }    // Caso nao consiga carregar a textura da banana
+    if (!texturebanana.loadFromFile("banana.png")) { return 1; }     // Caso nao consiga carregar a textura da banana
     sf::Sprite spritebanana;
     spritebanana.setTexture(texturebanana);
-	spritebanana.setScale(tamanho_pacman_real / texturebanana.getSize().x, tamanho_pacman_real / texturebanana.getSize().y);    // Controla tamanho da banana
+    spritebanana.setScale(tamanho_pacman_real / texturebanana.getSize().x, tamanho_pacman_real / texturebanana.getSize().y);    // Controla tamanho da banana
 
     //Tamanho morango
     sf::Texture texturemorango;
-	if (!texturemorango.loadFromFile("morango.png")) { return 1; }  // Caso nao consiga carregar a textura do morango
+    if (!texturemorango.loadFromFile("morango.png")) { return 1; }  // Caso nao consiga carregar a textura do morango
     sf::Sprite spritemorango;
     spritemorango.setTexture(texturemorango);
     spritemorango.setScale(tamanho_pacman_real / texturemorango.getSize().x, tamanho_pacman_real / texturemorango.getSize().y);
@@ -460,6 +467,20 @@ int main() {
     spriteBaixo.setTexture(textureBaixo);
     spriteBaixo.setScale(tamanho_pacman_real / textureBaixo.getSize().x, tamanho_pacman_real / textureBaixo.getSize().y);
 
+    //pacmancome
+     sf::Texture texturepacmancome;
+    if (!texturepacmancome.loadFromFile("pacmancome.png")) { return 1; }
+    sf::Sprite spritepacmancome;
+    spritepacmancome.setTexture(texturepacmancome); // (CORRIGIDO)
+    spritepacmancome.setScale(tamanho_pacman_real / texturepacmancome.getSize().x, tamanho_pacman_real / texturepacmancome.getSize().y);
+
+    //pacmanbola
+    sf::Texture texturepacbola;
+    if (!texturepacbola.loadFromFile("pacmanbola.png")) { return 1; }
+    sf::Sprite spritepacbola;
+    spritepacbola.setTexture(texturepacbola); // (CORRIGIDO)
+    spritepacbola.setScale(tamanho_pacman_real / texturepacbola.getSize().x, tamanho_pacman_real / texturepacbola.getSize().y);
+
     // Criacao dos fantasmas
     Ghost fantasmaVermelho(
         13, 14, // posição em blocos
@@ -490,10 +511,10 @@ int main() {
     );
 
     sf::Clock clock;
-	sf::Clock deltaClock; // Relogio para controlar o tempo de movimento suave
+    sf::Clock deltaClock; // Relogio para controlar o tempo de movimento suave
     sf::Clock ghostClock;
-    float ghostDelay = 0.3f; // tempo em segundos entre cada movimento do fantasma 
-	// Variaveis para controlar a direcao
+    float ghostDelay = 0.3f; // tempo em segundos entre cada movimento do fantasma
+    // Variaveis para controlar a direcao
     while (window.isOpen()) {
         float deltaTime = deltaClock.restart().asSeconds();
 
@@ -557,25 +578,23 @@ int main() {
                 if (alinhado && (posy == 0 || mapa[posy - 1][posx] == '1')) {
                     cima = false;
                 } else {
-                    float destino = (posy - 1) * tamanho_bloco;     // Destino do pacman (posição acima na grade)
-                    if (pacmanY > destino)      // Caso ainda não tenha chegado ao destino, continue movendo
+                    float destino = (posy - 1) * tamanho_bloco;    // Destino do pacman (posição acima na grade)
+                    if (pacmanY > destino)     // Caso ainda não tenha chegado ao destino, continue movendo
                         pacmanY -= velocidade * deltaTime;
-                    if (pacmanY < destino) {        // Se já chegou ao destino, ajuste a posição
+                    if (pacmanY < destino) {       // Se já chegou ao destino, ajuste a posição
                         pacmanY = destino;
                         posy--;
                     }
                 }
             }
             else if (baixo) {
-                if (alinhado && (posy == 29 || mapa[
-                    
-                    posy + 1][posx] == '1')) {
+                if (alinhado && (posy == 29 || mapa[posy + 1][posx] == '1')) {
                     baixo = false;
                 } else {
-                    float destino = (posy + 1) * tamanho_bloco;     // Destino do pacman (posição abaixo na grade)
-                    if (pacmanY < destino)      // Caso ainda não tenha chegado ao destino, continue movendo
+                    float destino = (posy + 1) * tamanho_bloco;    // Destino do pacman (posição abaixo na grade)
+                    if (pacmanY < destino)     // Caso ainda não tenha chegado ao destino, continue movendo
                         pacmanY += velocidade * deltaTime;
-                    if (pacmanY > destino) {        // Se já chegou ao destino, ajuste a posição
+                    if (pacmanY > destino) {       // Se já chegou ao destino, ajuste a posição
                         pacmanY = destino;
                         posy++;
                     }
@@ -585,10 +604,10 @@ int main() {
                 if (alinhado && !((posx > 0 && mapa[posy][posx - 1] != '1') || (posx == 0 && posy == LINHA_DO_TUNEL))) {
                     esq = false;
                 } else {
-                    float destino = (posx - 1) * tamanho_bloco;     // Destino do pacman (posição à esquerda na grade)
-                    if (pacmanX > destino)      // Caso ainda não tenha chegado ao destino, continue movendo
+                    float destino = (posx - 1) * tamanho_bloco;    // Destino do pacman (posição à esquerda na grade)
+                    if (pacmanX > destino)     // Caso ainda não tenha chegado ao destino, continue movendo
                         pacmanX -= velocidade * deltaTime;
-                    if (pacmanX < destino) {        // Se já chegou ao destino, ajuste a posição    
+                    if (pacmanX < destino) {       // Se já chegou ao destino, ajuste a posição     
                         pacmanX = destino;
                         posx--;
                     }
@@ -598,26 +617,26 @@ int main() {
                 if (alinhado && !((posx < 27 && mapa[posy][posx + 1] != '1') || (posx == 27 && posy == LINHA_DO_TUNEL))) {
                     dir = false;
                 } else {
-                    float destino = (posx + 1) * tamanho_bloco;     // Destino do pacman (posição à direita na grade)
-                    if (pacmanX < destino)      // Caso ainda não tenha chegado ao destino, continue movendo
+                    float destino = (posx + 1) * tamanho_bloco;    // Destino do pacman (posição à direita na grade)
+                    if (pacmanX < destino)     // Caso ainda não tenha chegado ao destino, continue movendo
                         pacmanX += velocidade * deltaTime;
-                    if (pacmanX > destino) {        // Se já chegou ao destino, ajuste a posição
+                    if (pacmanX > destino) {       // Se já chegou ao destino, ajuste a posição
                         pacmanX = destino;
                         posx++;
                     }
                 }
             }
 
-			// Pontuacao e coleta de itens
-			if (mapa[posy][posx] == '0') {  // Se comer comida
+            // Pontuacao e coleta de itens
+            if (mapa[posy][posx] == '0') {  // Se comer comida
                 mapa[posy][posx] = ' ';
-				score += 10;    // Pontos da comida
+                score += 10;    // Pontos da comida
                 scoreText.setString("Score: " + to_string(score));
                 somComePonto.play(); // Toca o som de comer ponto
             }
-			else if (mapa[posy][posx] == '3') {     // Se comer poder
+            else if (mapa[posy][posx] == '3') {     // Se comer poder
                 mapa[posy][posx] = ' ';
-				score += 50;    // Pontos do poder
+                score += 50;    // Pontos do poder
                 scoreText.setString("Score: " + to_string(score));
             }
             else if (mapa[posy][posx] == '4') { // Se comer banana
@@ -669,11 +688,85 @@ int main() {
                 }
             }
         }
+        
+        fantasmaVermelho.posX += ((fantasmaVermelho.blocoX * tamanho_bloco) - fantasmaVermelho.posX) * 0.2f;
+        fantasmaVermelho.posY += ((fantasmaVermelho.blocoY * tamanho_bloco) - fantasmaVermelho.posY) * 0.2f;
+        fantasmaAmarelo.posX += ((fantasmaAmarelo.blocoX * tamanho_bloco) - fantasmaAmarelo.posX) * 0.2f;
+        fantasmaAmarelo.posY += ((fantasmaAmarelo.blocoY * tamanho_bloco) - fantasmaAmarelo.posY) * 0.2f;
+        fantasmaRosa.posX += ((fantasmaRosa.blocoX * tamanho_bloco) - fantasmaRosa.posX) * 0.2f;
+        fantasmaRosa.posY += ((fantasmaRosa.blocoY * tamanho_bloco) - fantasmaRosa.posY) * 0.2f;
+        fantasmaAzul.posX += ((fantasmaAzul.blocoX * tamanho_bloco) - fantasmaAzul.posX) * 0.2f;
+        fantasmaAzul.posY += ((fantasmaAzul.blocoY * tamanho_bloco) - fantasmaAzul.posY) * 0.2f;
+        
+        if (ghostClock.getElapsedTime().asSeconds() > ghostDelay) {
+            fantasmaVermelho.movimento_aleatorio(mapa);
+            fantasmaAmarelo.movimento_aleatorio(mapa);
+            fantasmaRosa.movimento_aleatorio(mapa);
+            fantasmaAzul.movimento_aleatorio(mapa);
+            
+            fantasmaVermelho.mover(mapa);
+            fantasmaAmarelo.mover(mapa);
+            fantasmaRosa.mover(mapa);
+            fantasmaAzul.mover(mapa);
+            ghostClock.restart();
+        }
 
-		// Limpar a janela e desenhar os elementos
+        //LÓGICA DE COLISÃO
+        // Verifica se a posição em blocos do Pac-Man é a mesma de algum fantasma vivo
+        if ((posx == fantasmaVermelho.blocoX && posy == fantasmaVermelho.blocoY && fantasmaVermelho.vivo) ||
+            (posx == fantasmaAmarelo.blocoX && posy == fantasmaAmarelo.blocoY && fantasmaAmarelo.vivo) ||
+            (posx == fantasmaRosa.blocoX && posy == fantasmaRosa.blocoY && fantasmaRosa.vivo) ||
+            (posx == fantasmaAzul.blocoX && posy == fantasmaAzul.blocoY && fantasmaAzul.vivo))
+        {
+            // Se houver colisão, define que o Pac-Man morreu
+            pacmanmorto = true;
+        }
+
+        // Se o Pac-Man morreu, executa as ações de perda de vida
+        if (pacmanmorto) {
+            vidas--; // Diminui uma vida
+            somPacmanMorre.play(); // Toca o som de morte
+            sf::sleep(sf::seconds(1.5f)); // Pausa o jogo por 1.5 segundos
+
+            // Reseta a posição do Pac-Man para a inicial
+            posx = 4;
+            posy = 5;
+            pacmanX = posx * tamanho_bloco;
+            pacmanY = posy * tamanho_bloco;
+            // Reseta as variáveis de controle de movimento e direção
+            cima = baixo = esq = dir = false;
+            int_cima = int_baixo = int_esq = int_dir = false;
+            olhadireita = true;
+            olhaesquerda = olhacima = olhabaixo = false;
+
+            // Reseta a posição de todos os fantasmas
+            fantasmaVermelho.resetar();
+            fantasmaAmarelo.resetar();
+            fantasmaRosa.resetar();
+            fantasmaAzul.resetar();
+
+            // Reseta a flag de morte para que o jogo continue
+            pacmanmorto = false;
+        }
+    
+        // --- LÓGICA DE ANIMAÇÃO DA BOCA DO PAC-MAN (Adicionado) ---
+        // Só anima se o Pac-Man estiver se movendo
+        if (cima || baixo || esq || dir) {
+            if (pacmanAnimClock.getElapsedTime() > pacmanAnimInterval) {
+                // Inverte o estado da boca (se estava aberta, fecha, e vice-versa)
+                pacmanBocaAberta = !pacmanBocaAberta;
+                // Reinicia o relógio
+                pacmanAnimClock.restart();
+            }
+        } else {
+            // Se estiver parado, mantém a boca aberta
+            pacmanBocaAberta = true;
+        }
+
+        // Limpar a janela e desenhar os elementos
         window.clear(sf::Color::Black);
 
-		// Desenhar as paredes do mapa
+        // Desenhar as paredes do mapa
         for (int i = 0; i < 30; i++) {
             for (int j = 0; j < 28; j++) {
                 if (mapa[i][j] == '1') {
@@ -683,7 +776,7 @@ int main() {
             }
         }
 
-		//Desenhar os itens no mapa(comida, poder, banana, morango, cereja)
+        //Desenhar os itens no mapa(comida, poder, banana, morango, cereja)
         for (int i = 0; i < 30; i++) {
             for (int j = 0; j < 28; j++) {
                 if (mapa[i][j] == '0') { // Comida
@@ -709,57 +802,57 @@ int main() {
             }
         }
 
-		// Regula posicao do pacman e desenha o sprite correspondente
+        // Regula posicao do pacman e desenha o sprite correspondente (MODIFICADO PARA ANIMAÇÃO)
+        spritepacbola.setPosition(pacmanX + centralizar, pacmanY + centralizar);
+
         if (olhadireita) {
+            if (pacmanBocaAberta) {
+                spriteDir.setPosition(pacmanX + centralizar, pacmanY + centralizar);
+                window.draw(spriteDir);
+            } else {
+                window.draw(spritepacbola);
+            }
+        }
+        else if (olhaesquerda) {
+            if (pacmanBocaAberta) {
+                spriteEsq.setPosition(pacmanX + centralizar, pacmanY + centralizar);
+                window.draw(spriteEsq);
+            } else {
+                window.draw(spritepacbola);
+            }
+        }
+        else if (olhacima) {
+            if (pacmanBocaAberta) {
+                spriteCima.setPosition(pacmanX + centralizar, pacmanY + centralizar);
+                window.draw(spriteCima);
+            } else {
+                window.draw(spritepacbola);
+            }
+        }
+        else if (olhabaixo) {
+            if (pacmanBocaAberta) {
+                spriteBaixo.setPosition(pacmanX + centralizar, pacmanY + centralizar);
+                window.draw(spriteBaixo);
+            } else {
+                window.draw(spritepacbola);
+            }
+        } else {
+             // Caso especial: se o pacman não está olhando para nenhuma direção (ex: início do jogo)
             spriteDir.setPosition(pacmanX + centralizar, pacmanY + centralizar);
             window.draw(spriteDir);
         }
-        else if (olhaesquerda) {
-            spriteEsq.setPosition(pacmanX + centralizar, pacmanY + centralizar);
-            window.draw(spriteEsq);
-        }
-        else if (olhacima) {
-            spriteCima.setPosition(pacmanX + centralizar, pacmanY + centralizar);
-            window.draw(spriteCima);
-        }
-        else if (olhabaixo) {
-            spriteBaixo.setPosition(pacmanX + centralizar, pacmanY + centralizar);
-            window.draw(spriteBaixo);
-        }
 
-		// Desenhar as vidas restantes
+        // Desenhar as vidas restantes
         for (int i = 0; i < vidas; ++i) {
             spriteDir.setPosition((i * (tamanho_bloco + 5)) + 10, 30 * tamanho_bloco + 10);
             window.draw(spriteDir);
-        }
-
-        fantasmaVermelho.posX += ((fantasmaVermelho.blocoX * tamanho_bloco) - fantasmaVermelho.posX) * 0.2f;
-        fantasmaVermelho.posY += ((fantasmaVermelho.blocoY * tamanho_bloco) - fantasmaVermelho.posY) * 0.2f;
-        fantasmaAmarelo.posX += ((fantasmaAmarelo.blocoX * tamanho_bloco) - fantasmaAmarelo.posX) * 0.2f;
-        fantasmaAmarelo.posY += ((fantasmaAmarelo.blocoY * tamanho_bloco) - fantasmaAmarelo.posY) * 0.2f;
-        fantasmaRosa.posX += ((fantasmaRosa.blocoX * tamanho_bloco) - fantasmaRosa.posX) * 0.2f;
-        fantasmaRosa.posY += ((fantasmaRosa.blocoY * tamanho_bloco) - fantasmaRosa.posY) * 0.2f;
-        fantasmaAzul.posX += ((fantasmaAzul.blocoX * tamanho_bloco) - fantasmaAzul.posX) * 0.2f;
-        fantasmaAzul.posY += ((fantasmaAzul.blocoY * tamanho_bloco) - fantasmaAzul.posY) * 0.2f;
-        
-        if (ghostClock.getElapsedTime().asSeconds() > ghostDelay) {
-            fantasmaVermelho.movimento_aleatorio(mapa);
-            fantasmaAmarelo.movimento_aleatorio(mapa);
-            fantasmaRosa.movimento_aleatorio(mapa);
-            fantasmaAzul.movimento_aleatorio(mapa);
-            
-            fantasmaVermelho.mover(mapa);
-            fantasmaAmarelo.mover(mapa);
-            fantasmaRosa.mover(mapa);
-            fantasmaAzul.mover(mapa);
-            ghostClock.restart();
         }
         
         fantasmaVermelho.desenhar(window, tamanho_bloco, centralizar);
         fantasmaAmarelo.desenhar(window, tamanho_bloco, centralizar);
         fantasmaRosa.desenhar(window, tamanho_bloco, centralizar);
         fantasmaAzul.desenhar(window, tamanho_bloco, centralizar);
-		// Desenhar o texto de pontuacao
+        // Desenhar o texto de pontuacao
         window.draw(scoreText);
         
     //Verifica vitoria
@@ -774,8 +867,8 @@ int main() {
         if (!ganhou) break;
     }
 
-     if (ganhou) {
-        jogoMusic.stop();        
+    if (ganhou) {
+        jogoMusic.stop();      
         vitoriaMusic.play();     
 
         sf::Text mensagemVitoria;
@@ -801,10 +894,26 @@ int main() {
 
     // Verifica derrota
         if (vidas <= 0) {
-        jogoMusic.stop();        // Para a música de fundo
-        somPacmanMorre.play();   // Toca som de morte
+        jogoMusic.stop();      // Para a música de fundo
+        // O som de morte já tocou e a pausa já foi feita na lógica de colisão
+        
+        // Adiciona uma mensagem de "Game Over"
+        sf::Text mensagemDerrota;
+        mensagemDerrota.setFont(font);
+        mensagemDerrota.setCharacterSize(50);
+        mensagemDerrota.setFillColor(sf::Color::Red);
+        mensagemDerrota.setString("GAME OVER");
+        sf::FloatRect textRect = mensagemDerrota.getLocalBounds();
+        mensagemDerrota.setOrigin(textRect.width / 2, textRect.height / 2);
+        mensagemDerrota.setPosition(largura_janela_total / 2, altura_janela_total / 2);
+
+        // Mostra a mensagem de derrota e então fecha
+        window.clear(sf::Color::Black);
+        window.draw(mensagemDerrota);
+        window.display();
         sf::sleep(sf::seconds(3)); // Espera 3 segundos
-        window.close();          // Fecha o jogo
+
+        window.close();        // Fecha o jogo
     }
 
         window.display();
