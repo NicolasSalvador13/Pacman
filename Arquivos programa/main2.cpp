@@ -189,11 +189,11 @@ int main() {
     float pacmanY = posy * tamanho_bloco;       // Posicao do pacman em pixels na vertical
     float velocidade = 100.f; // pixels por segundo
 
-    // --- NOVAS VARIÁVEIS PARA ANIMAÇÃO DA BOCA (Adicionado) ---
+
     sf::Clock pacmanAnimClock;
     sf::Time pacmanAnimInterval = sf::seconds(0.08f); // Intervalo rápido para abrir/fechar a boca
     bool pacmanBocaAberta = true;
-    // --- FIM DAS NOVAS VARIÁVEIS ---
+
 
     int largura_janela_total = tamanho_bloco * 28;      // Largura total da janela
     int altura_janela_total = tamanho_bloco * 30 + 80;      // Altura total da janela (30 blocos + 80 pixels para a pontuacao e vidas)
@@ -471,14 +471,14 @@ int main() {
      sf::Texture texturepacmancome;
     if (!texturepacmancome.loadFromFile("pacmancome.png")) { return 1; }
     sf::Sprite spritepacmancome;
-    spritepacmancome.setTexture(texturepacmancome); // (CORRIGIDO)
+    spritepacmancome.setTexture(texturepacmancome); 
     spritepacmancome.setScale(tamanho_pacman_real / texturepacmancome.getSize().x, tamanho_pacman_real / texturepacmancome.getSize().y);
 
     //pacmanbola
     sf::Texture texturepacbola;
     if (!texturepacbola.loadFromFile("pacmanbola.png")) { return 1; }
     sf::Sprite spritepacbola;
-    spritepacbola.setTexture(texturepacbola); // (CORRIGIDO)
+    spritepacbola.setTexture(texturepacbola);
     spritepacbola.setScale(tamanho_pacman_real / texturepacbola.getSize().x, tamanho_pacman_real / texturepacbola.getSize().y);
 
     // Criacao dos fantasmas
@@ -749,7 +749,7 @@ int main() {
             pacmanmorto = false;
         }
     
-        // --- LÓGICA DE ANIMAÇÃO DA BOCA DO PAC-MAN (Adicionado) ---
+      
         // Só anima se o Pac-Man estiver se movendo
         if (cima || baixo || esq || dir) {
             if (pacmanAnimClock.getElapsedTime() > pacmanAnimInterval) {
@@ -802,7 +802,7 @@ int main() {
             }
         }
 
-        // Regula posicao do pacman e desenha o sprite correspondente (MODIFICADO PARA ANIMAÇÃO)
+        // Regula posicao do pacman e desenha o sprite correspondente 
         spritepacbola.setPosition(pacmanX + centralizar, pacmanY + centralizar);
 
         if (olhadireita) {
@@ -837,7 +837,7 @@ int main() {
                 window.draw(spritepacbola);
             }
         } else {
-             // Caso especial: se o pacman não está olhando para nenhuma direção (ex: início do jogo)
+             // Caso especial: se o pacman não está olhando para nenhuma direção
             spriteDir.setPosition(pacmanX + centralizar, pacmanY + centralizar);
             window.draw(spriteDir);
         }
